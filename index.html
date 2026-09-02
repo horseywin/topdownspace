@@ -1,0 +1,3610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Down Space</title>
+<meta name="description" content="Top Down Space — command a growing fleet of starships, master formations, and be the last commander standing.">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link id="favicon" rel="icon" type="image/png" href="https://topdownspace.github.io/favicon-32x32.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6598513151197899"
+ crossorigin="anonymous"></script>
+<style>
+    /* =========================================================
+       DESIGN TOKENS — "Command Console" identity
+       Deep-space navy base, cyan/violet dual accent, angular
+       clipped-corner panels with HUD corner brackets.
+       ========================================================= */
+    :root {
+        --void-0: #04050d;
+        --void-1: #080a1c;
+        --void-2: #0d1130;
+        --panel-bg: rgba(9, 12, 28, 0.86);
+        --panel-bg-soft: rgba(12, 16, 38, 0.72);
+        --panel-line: rgba(120, 200, 255, 0.22);
+        --cyan: #2fe0ff;
+        --cyan-dim: #17a4c2;
+        --violet: #9a6bff;
+        --violet-dim: #6a46c9;
+        --gold: #ffb545;
+        --danger: #ff4d6d;
+        --success: #3de8a5;
+        --text-hi: #eaf6ff;
+        --text-mid: #9fb4d6;
+        --text-dim: #5f7295;
+        --glow-a: rgba(90,60,200,0.16);
+        --glow-b: rgba(0,180,220,0.14);
+        --stage-a: rgba(10,14,40,0.9);
+        --stage-b: rgba(2,3,10,1);
+        --font-display: 'Orbitron', sans-serif;
+        --font-body: 'Rajdhani', sans-serif;
+        --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    /* =========================================================
+       THEMES — overriding the token set per data-theme
+       ========================================================= */
+    html[data-theme="minimal"] {
+        --void-0: #f3f4f8; --void-1: #eceef4; --void-2: #e3e6ee;
+        --panel-bg: rgba(255,255,255,0.92); --panel-bg-soft: rgba(255,255,255,0.7);
+        --panel-line: rgba(20,30,60,0.14);
+        --cyan: #2563eb; --cyan-dim: #1d4fbf; --violet: #7c3aed; --violet-dim: #6428c7;
+        --gold: #b45309; --danger: #dc2626; --success: #059669;
+        --text-hi: #14161f; --text-mid: #4b5265; --text-dim: #848dab;
+        --glow-a: rgba(37,99,235,0.07); --glow-b: rgba(124,58,237,0.06);
+        --stage-a: rgba(255,255,255,0.9); --stage-b: rgba(225,228,238,1);
+    }
+    html[data-theme="solar"] {
+        --void-0: #170b03; --void-1: #29140a; --void-2: #3a1e10;
+        --panel-bg: rgba(30,15,6,0.86); --panel-bg-soft: rgba(38,20,9,0.72);
+        --panel-line: rgba(255,180,100,0.22);
+        --cyan: #ff9d3d; --cyan-dim: #d97f2c; --violet: #ff5f56; --violet-dim: #d9483f;
+        --gold: #ffd166; --danger: #ff3b30; --success: #a0c34a;
+        --text-hi: #fff3e6; --text-mid: #d9b491; --text-dim: #8f6a4f;
+        --glow-a: rgba(255,120,40,0.18); --glow-b: rgba(255,80,60,0.14);
+        --stage-a: rgba(40,18,8,0.9); --stage-b: rgba(10,4,2,1);
+    }
+    html[data-theme="neon"] {
+        --void-0: #0a0014; --void-1: #150025; --void-2: #200a3d;
+        --panel-bg: rgba(14,2,26,0.86); --panel-bg-soft: rgba(20,4,36,0.72);
+        --panel-line: rgba(255,60,220,0.25);
+        --cyan: #ff2fd0; --cyan-dim: #c723a3; --violet: #4fe8ff; --violet-dim: #2cb8cc;
+        --gold: #ffe93b; --danger: #ff2f6e; --success: #39ff9d;
+        --text-hi: #f5e9ff; --text-mid: #c79fe0; --text-dim: #7c5c96;
+        --glow-a: rgba(255,47,208,0.18); --glow-b: rgba(79,232,255,0.14);
+        --stage-a: rgba(20,4,36,0.9); --stage-b: rgba(6,1,12,1);
+    }
+    html[data-theme="emerald"] {
+        --void-0: #030906; --void-1: #061a10; --void-2: #0a2818;
+        --panel-bg: rgba(4,16,10,0.86); --panel-bg-soft: rgba(6,22,14,0.72);
+        --panel-line: rgba(43,255,158,0.22);
+        --cyan: #2bff9e; --cyan-dim: #1fcc7d; --violet: #17c9a8; --violet-dim: #129e85;
+        --gold: #d4ff3d; --danger: #ff4757; --success: #2bff9e;
+        --text-hi: #e4fff0; --text-mid: #9fd9bc; --text-dim: #5f8e77;
+        --glow-a: rgba(43,255,158,0.14); --glow-b: rgba(23,201,168,0.12);
+        --stage-a: rgba(4,20,12,0.9); --stage-b: rgba(1,5,3,1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        background: var(--void-0);
+        font-family: var(--font-body);
+        color: var(--text-hi);
+        -webkit-font-smoothing: antialiased;
+        transition: background 0.3s ease;
+    }
+
+    body {
+        background:
+            radial-gradient(ellipse 60% 45% at 20% 15%, var(--glow-a), transparent 60%),
+            radial-gradient(ellipse 55% 40% at 85% 85%, var(--glow-b), transparent 60%),
+            linear-gradient(160deg, var(--void-0), var(--void-1) 55%, var(--void-2));
+    }
+
+    button, input { font-family: inherit; }
+
+    ::selection { background: var(--violet); color: #fff; }
+
+    /* Focus visibility (accessibility) */
+    button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 3px;
+        border-radius: 2px;
+    }
+
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(var(--cyan-dim), var(--violet-dim)); border-radius: 6px; }
+
+    @keyframes glowPulse {
+        0%, 100% { text-shadow: 0 0 8px rgba(47,224,255,0.55), 0 0 22px rgba(154,107,255,0.25); }
+        50% { text-shadow: 0 0 16px rgba(47,224,255,0.9), 0 0 34px rgba(154,107,255,0.5); }
+    }
+    @keyframes borderPulse {
+        0%, 100% { box-shadow: 0 0 0 rgba(47,224,255,0); filter: drop-shadow(0 0 10px rgba(47,224,255,0.25)); }
+        50% { filter: drop-shadow(0 0 18px rgba(47,224,255,0.45)); }
+    }
+    @keyframes screenIn {
+        0% { opacity: 0; transform: scale(0.97) translateY(6px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes rise {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes scanSweep {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(220%); }
+    }
+    @keyframes flicker {
+        0%, 92%, 100% { opacity: 1; }
+        94% { opacity: 0.75; }
+        96% { opacity: 1; }
+        97% { opacity: 0.6; }
+    }
+    @keyframes chipFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+    @keyframes podiumGlow {
+        0% { text-shadow: 0 0 14px var(--gold), 0 0 30px rgba(255,181,69,0.4); }
+        100% { text-shadow: 0 0 26px var(--gold), 0 0 54px rgba(255,77,109,0.5); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /* =========================================================
+       LAYOUT — game stage + HUD
+       ========================================================= */
+    #gameContainer {
+        width: 88%;
+        height: 94%;
+        position: absolute;
+        top: 3%;
+        left: 6%;
+        display: flex;
+        background: radial-gradient(circle at 50% 50%, var(--stage-a), var(--stage-b));
+        border: 1px solid var(--panel-line);
+        border-radius: 4px;
+        box-shadow: 0 0 40px rgba(47,224,255,0.12), inset 0 0 60px rgba(0,0,0,0.6);
+    }
+    #canvasWrap {
+        position: relative;
+        flex-grow: 1;
+        min-width: 0;
+        display: flex;
+    }
+    canvas {
+        image-rendering: optimizeSpeed;
+        flex-grow: 1;
+        background: transparent;
+        display: block;
+    }
+    /* HUD corner brackets overlay on the play field */
+    .corner-frame {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 6;
+        background-repeat: no-repeat;
+        background-image:
+            linear-gradient(var(--cyan), var(--cyan)), linear-gradient(var(--cyan), var(--cyan)),
+            linear-gradient(var(--cyan), var(--cyan)), linear-gradient(var(--cyan), var(--cyan)),
+            linear-gradient(var(--cyan), var(--cyan)), linear-gradient(var(--cyan), var(--cyan)),
+            linear-gradient(var(--cyan), var(--cyan)), linear-gradient(var(--cyan), var(--cyan));
+        background-size: 2px 22px, 22px 2px, 2px 22px, 22px 2px, 2px 22px, 22px 2px, 2px 22px, 22px 2px;
+        background-position: top 8px left 8px, top 8px left 8px, top 8px right 8px, top 8px right 8px,
+                              bottom 8px left 8px, bottom 8px left 8px, bottom 8px right 8px, bottom 8px right 8px;
+        opacity: 0.75;
+        filter: drop-shadow(0 0 4px rgba(47,224,255,0.6));
+    }
+
+    /* Right telemetry / fleet HUD */
+    #uiPanel {
+        width: 260px;
+        flex-shrink: 0;
+        height: 100%;
+        background: linear-gradient(180deg, rgba(6,9,24,0.95), rgba(6,9,24,0.86));
+        border-left: 1px solid var(--panel-line);
+        z-index: 10;
+        overflow-y: auto;
+        display: none;
+        padding: 12px 10px 10px;
+    }
+    #uiPanel .hud-title {
+        font-family: var(--font-display);
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        margin: 4px 2px 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .fleet-card {
+        position: relative;
+        background: var(--panel-bg-soft);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-left: 3px solid var(--fc-color, var(--cyan));
+        border-radius: 3px;
+        padding: 7px 9px;
+        margin-bottom: 7px;
+        animation: rise 0.25s var(--ease);
+    }
+    .fleet-card .fc-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 12.5px;
+        font-weight: 600;
+    }
+    .fleet-card .fc-name { color: var(--text-hi); }
+    .fleet-card .fc-ships { color: var(--text-mid); font-size: 11px; font-weight: 500; }
+    .fleet-card .fc-bar-track {
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(255,255,255,0.08);
+        margin-top: 5px;
+        overflow: hidden;
+    }
+    .fleet-card .fc-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, var(--fc-color, var(--cyan)), #fff2);
+        transition: width 0.15s linear;
+    }
+    .fleet-card .fc-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--text-dim);
+        margin-top: 4px;
+        letter-spacing: 0.5px;
+    }
+    .elim-toast {
+        font-size: 11px;
+        color: var(--danger);
+        border-left: 2px solid var(--danger);
+        padding: 4px 7px;
+        margin-bottom: 5px;
+        background: rgba(255,77,109,0.08);
+        animation: rise 0.2s var(--ease);
+        letter-spacing: 0.3px;
+    }
+
+    /* Radar */
+    #radarWrap {
+        margin-top: 6px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    #radarWrap .hud-title { margin-bottom: 6px; }
+    #radarCanvas { width: 100%; aspect-ratio: 1 / 1; display: block; border-radius: 50%; }
+
+    /* Combat log / chat */
+    #chatWrap {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    #chatWrap .hud-title { margin-bottom: 6px; }
+    #chatLog {
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 11.5px;
+        line-height: 1.5;
+        padding-right: 2px;
+    }
+    .chat-line { margin-bottom: 6px; color: var(--text-mid); overflow-wrap: break-word; }
+    .chat-line .chat-name { font-family: var(--font-display); font-weight: 700; margin-right: 4px; }
+    .chat-line.chat-system {
+        color: var(--gold);
+        font-family: var(--font-display);
+        font-size: 9.5px;
+        letter-spacing: 0.5px;
+        border-left: 2px solid var(--gold);
+        padding: 2px 0 2px 7px;
+        margin: 9px 0;
+        background: rgba(255,181,69,0.06);
+    }
+
+    /* Lineup screen */
+    #lineupList { width: 100%; max-height: 50vh; overflow-y: auto; margin-bottom: 4px; }
+    .lineup-row {
+        display: flex; align-items: center; gap: 11px;
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .lineup-row.lineup-you { background: rgba(255,226,122,0.07); border-radius: 3px; }
+    .lineup-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 8px currentColor; }
+    .lineup-name { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text-hi); flex-grow: 1; }
+    .lineup-tag { font-size: 10.5px; color: var(--text-dim); letter-spacing: 0.4px; }
+    .lineup-row.lineup-you .lineup-tag { color: var(--gold); font-weight: 700; }
+
+
+    /* =========================================================
+       SCREENS / OVERLAYS
+       ========================================================= */
+    .screen {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(ellipse at 50% 30%, rgba(20,16,60,0.55), rgba(2,3,10,0.92) 70%);
+        backdrop-filter: blur(2px);
+    }
+    .screen.active { display: flex; }
+    .screen-inner {
+        width: min(720px, 92%);
+        max-height: 90%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: screenIn 0.32s var(--ease);
+    }
+
+    .console-panel {
+        position: relative;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-line);
+        border-radius: 6px;
+        padding: 28px 34px;
+        width: 100%;
+        background-repeat: no-repeat;
+        background-image:
+            linear-gradient(var(--cyan), var(--cyan)), linear-gradient(var(--cyan), var(--cyan)),
+            linear-gradient(var(--violet), var(--violet)), linear-gradient(var(--violet), var(--violet)),
+            linear-gradient(var(--violet), var(--violet)), linear-gradient(var(--violet), var(--violet)),
+            linear-gradient(var(--cyan), var(--cyan)), linear-gradient(var(--cyan), var(--cyan));
+        background-size: 2px 26px, 26px 2px, 2px 26px, 26px 2px, 2px 26px, 26px 2px, 2px 26px, 26px 2px;
+        background-position: top left, top left, top right, top right,
+                              bottom left, bottom left, bottom right, bottom right;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    }
+
+    .eyebrow {
+        font-family: var(--font-display);
+        font-size: 11px;
+        letter-spacing: 4px;
+        color: var(--cyan-dim);
+        margin: 0 0 6px;
+        text-align: center;
+    }
+    .logo-title {
+        font-family: var(--font-display);
+        font-weight: 900;
+        font-size: clamp(32px, 5vw, 50px);
+        margin: 0;
+        text-align: center;
+        letter-spacing: 1px;
+        background: linear-gradient(100deg, var(--cyan) 10%, #d9e9ff 35%, var(--violet) 75%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: glowPulse 3s ease-in-out infinite;
+        line-height: 1.05;
+    }
+    .logo-sub {
+        text-align: center;
+        color: var(--text-mid);
+        font-size: 14px;
+        letter-spacing: 1.5px;
+        margin: 6px 0 26px;
+        font-weight: 500;
+    }
+    h2.section-title {
+        font-family: var(--font-display);
+        font-size: 20px;
+        letter-spacing: 1.5px;
+        text-align: center;
+        margin: 0 0 4px;
+        color: var(--text-hi);
+    }
+    p.section-sub {
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 13px;
+        margin: 0 0 20px;
+    }
+
+    /* =========================================================
+       BUTTONS
+       ========================================================= */
+    .btn {
+        position: relative;
+        font-family: var(--font-display);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 13px 22px;
+        color: var(--text-hi);
+        background: linear-gradient(135deg, #10182f, #0a0e22);
+        border: 1px solid rgba(120,190,255,0.35);
+        clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        cursor: pointer;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), border-color 0.15s var(--ease);
+    }
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; height: 100%; width: 46%;
+        background: linear-gradient(100deg, transparent, rgba(255,255,255,0.16), transparent);
+        transform: translateX(-120%);
+        pointer-events: none;
+    }
+    .btn:hover { transform: translateY(-2px); border-color: var(--cyan); box-shadow: 0 6px 22px rgba(47,224,255,0.25); }
+    .btn:hover::before { animation: scanSweep 0.9s ease forwards; }
+    .btn:active { transform: translateY(0); }
+    .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .btn-primary { background: linear-gradient(135deg, #0c2f4a, #142a5c); border-color: var(--cyan); }
+    .btn-primary:hover { box-shadow: 0 6px 26px rgba(47,224,255,0.4); }
+    .btn-accent { background: linear-gradient(135deg, #2a1450, #1a0f3d); border-color: var(--violet); }
+    .btn-accent:hover { border-color: var(--violet); box-shadow: 0 6px 26px rgba(154,107,255,0.4); }
+    .btn-gold { background: linear-gradient(135deg, #4a3105, #2a1c04); border-color: var(--gold); color: #ffe3b0; }
+    .btn-gold:hover { box-shadow: 0 6px 26px rgba(255,181,69,0.4); }
+    .btn-ghost { background: transparent; border-color: rgba(255,255,255,0.18); color: var(--text-mid); }
+    .btn-ghost:hover { color: var(--text-hi); border-color: rgba(255,255,255,0.4); box-shadow: none; }
+    .btn-full { width: 100%; }
+    .btn-sm { padding: 9px 14px; font-size: 11px; }
+    .btn.clicked { animation: none; }
+    .btn.clicked::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--gold);
+        transform: translate(-50%, -50%);
+        animation: pingOut 0.35s ease-out forwards;
+        box-shadow: 0 0 12px var(--gold);
+    }
+    @keyframes pingOut { 0% { width: 8px; height: 8px; opacity: 1; } 100% { width: 90px; height: 90px; opacity: 0; } }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; width: 100%; }
+    .btn-col { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 300px; }
+
+    .icon-btn {
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--panel-bg-soft);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 50%;
+        color: var(--text-mid);
+        cursor: pointer;
+        transition: all 0.15s var(--ease);
+    }
+    .icon-btn:hover { color: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 14px rgba(47,224,255,0.3); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    .top-right-controls {
+        position: absolute; top: 16px; right: 16px;
+        display: flex; gap: 8px; z-index: 3;
+    }
+    .top-left-controls {
+        position: absolute; top: 16px; left: 16px;
+        display: flex; gap: 8px; z-index: 3;
+    }
+
+    /* =========================================================
+       OPTION GRIDS (player count / bot count / difficulty)
+       ========================================================= */
+    .option-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        gap: 10px;
+        width: 100%;
+        margin-bottom: 22px;
+    }
+    .option-card {
+        position: relative;
+        background: var(--panel-bg-soft);
+        border: 1px solid rgba(255,255,255,0.12);
+        clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        padding: 14px 8px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        color: var(--text-mid);
+        transition: all 0.15s var(--ease);
+    }
+    .option-card:hover { border-color: var(--cyan); color: var(--text-hi); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(47,224,255,0.18); }
+    .option-card svg { width: 24px; height: 24px; }
+    .option-card .oc-label { font-family: var(--font-display); font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+    .option-card .oc-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
+    .option-card.tier-novice:hover { border-color: var(--success); }
+    .option-card.tier-standard:hover { border-color: var(--cyan); }
+    .option-card.tier-elite:hover { border-color: var(--violet); }
+    .option-card.tier-deity:hover { border-color: var(--danger); }
+    .option-card.tier-novice .oc-label { color: var(--success); }
+    .option-card.tier-standard .oc-label { color: var(--cyan); }
+    .option-card.tier-elite .oc-label { color: var(--violet); }
+    .option-card.tier-deity .oc-label { color: var(--danger); }
+
+    .breadcrumb {
+        display: flex; gap: 6px; align-items: center;
+        font-size: 10.5px; letter-spacing: 1.5px; color: var(--text-dim);
+        margin-bottom: 14px; text-transform: uppercase; font-weight: 600;
+    }
+    .breadcrumb .bc-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-dim); }
+    .breadcrumb .bc-current { color: var(--cyan); }
+
+    /* =========================================================
+       MODULE GRID
+       ========================================================= */
+    #moduleScroll {
+        width: 100%;
+        max-height: 46vh;
+        overflow-y: auto;
+        padding: 4px 4px 8px;
+        margin-bottom: 16px;
+    }
+    .module-group-label {
+        font-family: var(--font-display);
+        font-size: 10.5px;
+        letter-spacing: 2px;
+        color: var(--violet);
+        margin: 14px 2px 8px;
+        text-transform: uppercase;
+    }
+    .module-group-label:first-child { margin-top: 0; }
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 8px;
+    }
+    .module-card {
+        position: relative;
+        background: var(--panel-bg-soft);
+        border: 1px solid rgba(255,255,255,0.09);
+        border-radius: 4px;
+        padding: 10px 11px;
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        cursor: pointer;
+        transition: all 0.12s var(--ease);
+        text-align: left;
+    }
+    .module-card:hover { border-color: rgba(120,190,255,0.4); background: rgba(20,26,54,0.8); }
+    .module-card.on { border-color: var(--cyan); background: rgba(20,60,80,0.28); box-shadow: inset 0 0 0 1px rgba(47,224,255,0.15); }
+    .module-card .mc-icon {
+        width: 26px; height: 26px; flex-shrink: 0; color: var(--text-dim);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .module-card.on .mc-icon { color: var(--cyan); }
+    .module-card .mc-icon svg { width: 100%; height: 100%; }
+    .module-card .mc-body { flex-grow: 1; min-width: 0; }
+    .module-card .mc-title { font-size: 12.5px; font-weight: 700; color: var(--text-hi); letter-spacing: 0.3px; }
+    .module-card .mc-desc { font-size: 10.5px; color: var(--text-dim); line-height: 1.35; margin-top: 2px; }
+    .module-card input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+    .mc-switch {
+        flex-shrink: 0; width: 32px; height: 18px; border-radius: 10px;
+        background: rgba(255,255,255,0.12);
+        position: relative;
+        transition: background 0.15s var(--ease);
+        margin-top: 2px;
+    }
+    .mc-switch::after {
+        content: ''; position: absolute; top: 2px; left: 2px;
+        width: 14px; height: 14px; border-radius: 50%;
+        background: #cdd8ea;
+        transition: transform 0.15s var(--ease), background 0.15s var(--ease);
+    }
+    .module-card.on .mc-switch { background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)); }
+    .module-card.on .mc-switch::after { transform: translateX(14px); background: #fff; box-shadow: 0 0 6px rgba(47,224,255,0.8); }
+
+    .module-toolbar {
+        display: flex; justify-content: space-between; align-items: center;
+        width: 100%; margin-bottom: 10px; gap: 10px; flex-wrap: wrap;
+    }
+    .module-count { font-size: 11.5px; color: var(--text-dim); letter-spacing: 0.5px; }
+    .module-count strong { color: var(--cyan); }
+
+    .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .preset-card {
+        flex: 1 1 138px;
+        background: var(--panel-bg-soft);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 4px;
+        padding: 9px 11px;
+        cursor: pointer;
+        transition: all 0.12s var(--ease);
+    }
+    .preset-card:hover { border-color: var(--violet); }
+    .preset-card.active { border-color: var(--gold); background: rgba(255,181,69,0.1); }
+    .preset-name { font-family: var(--font-display); font-size: 11.5px; font-weight: 700; color: var(--text-hi); }
+    .preset-desc { font-size: 10px; color: var(--text-dim); margin-top: 3px; line-height: 1.35; }
+
+    .module-search-row {
+        display: flex; align-items: center; gap: 9px;
+        background: var(--panel-bg-soft);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 4px;
+        padding: 9px 13px;
+        margin-bottom: 12px;
+    }
+    .module-search-row svg { width: 15px; height: 15px; color: var(--text-dim); flex-shrink: 0; }
+    .module-search-row input {
+        background: none; border: none; outline: none;
+        color: var(--text-hi); font-family: var(--font-body); font-size: 13.5px;
+        width: 100%;
+    }
+    .module-search-row input::placeholder { color: var(--text-dim); }
+
+    .link-btn {
+        background: none; border: none; color: var(--text-mid); font-family: var(--font-body);
+        font-size: 11.5px; font-weight: 600; cursor: pointer; letter-spacing: 0.3px;
+        text-decoration: underline; text-underline-offset: 2px; padding: 2px 4px;
+    }
+    .link-btn:hover { color: var(--cyan); }
+
+    /* Theme picker */
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; margin-bottom: 18px; }
+    .theme-card {
+        border-radius: 4px;
+        border: 1px solid rgba(255,255,255,0.14);
+        padding: 8px 6px 7px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.12s var(--ease);
+    }
+    .theme-card:hover { border-color: rgba(255,255,255,0.35); }
+    .theme-card.active { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+    .theme-swatch { height: 26px; border-radius: 3px; margin-bottom: 6px; }
+    .theme-swatch.nebula { background: linear-gradient(135deg, #04050d, #2fe0ff 55%, #9a6bff); }
+    .theme-swatch.minimal { background: linear-gradient(135deg, #f3f4f8, #2563eb 55%, #7c3aed); }
+    .theme-swatch.solar { background: linear-gradient(135deg, #170b03, #ff9d3d 55%, #ff5f56); }
+    .theme-swatch.neon { background: linear-gradient(135deg, #0a0014, #ff2fd0 55%, #4fe8ff); }
+    .theme-swatch.emerald { background: linear-gradient(135deg, #030906, #2bff9e 55%, #17c9a8); }
+    .theme-label { font-family: var(--font-display); font-size: 9.5px; letter-spacing: 0.5px; color: var(--text-mid); }
+    .theme-card.active .theme-label { color: var(--gold); }
+
+    /* =========================================================
+       HOW TO PLAY / DOCS MODAL
+       ========================================================= */
+    .doc-shell {
+        width: min(960px, 94%);
+        height: 88%;
+        display: flex;
+        flex-direction: column;
+        animation: screenIn 0.3s var(--ease);
+    }
+    .doc-panel {
+        flex-grow: 1;
+        display: flex;
+        min-height: 0;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-line);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    }
+    .doc-tabs {
+        width: 190px;
+        flex-shrink: 0;
+        background: rgba(6,9,22,0.7);
+        border-right: 1px solid var(--panel-line);
+        padding: 16px 10px;
+        overflow-y: auto;
+    }
+    .doc-tab {
+        display: flex; align-items: center; gap: 9px;
+        padding: 10px 10px;
+        font-family: var(--font-display);
+        font-size: 11.5px;
+        letter-spacing: 0.5px;
+        color: var(--text-mid);
+        cursor: pointer;
+        border-radius: 3px;
+        border-left: 2px solid transparent;
+        margin-bottom: 3px;
+        transition: all 0.12s var(--ease);
+    }
+    .doc-tab svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .doc-tab:hover { color: var(--text-hi); background: rgba(255,255,255,0.04); }
+    .doc-tab.active { color: var(--cyan); border-left-color: var(--cyan); background: rgba(47,224,255,0.08); }
+    .doc-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 26px 34px 40px;
+    }
+    .doc-page { display: none; animation: rise 0.2s var(--ease); }
+    .doc-page.active { display: block; }
+    .doc-page h3 {
+        font-family: var(--font-display);
+        color: var(--cyan);
+        font-size: 17px;
+        letter-spacing: 0.5px;
+        margin: 26px 0 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding-bottom: 6px;
+    }
+    .doc-page h3:first-child { margin-top: 0; }
+    .doc-page h4 {
+        font-family: var(--font-display);
+        color: var(--text-hi);
+        font-size: 13px;
+        letter-spacing: 0.3px;
+        margin: 16px 0 6px;
+    }
+    .doc-page p { color: var(--text-mid); font-size: 14px; line-height: 1.65; margin: 8px 0; }
+    .doc-page ul, .doc-page ol { color: var(--text-mid); font-size: 14px; line-height: 1.65; padding-left: 20px; }
+    .doc-page li { margin-bottom: 5px; }
+    .doc-page strong { color: var(--text-hi); }
+    .doc-page .tip {
+        border-left: 3px solid var(--gold);
+        background: rgba(255,181,69,0.07);
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #f3dcae;
+        margin: 12px 0;
+        border-radius: 0 3px 3px 0;
+    }
+    .doc-page .tip strong { color: var(--gold); }
+    .key {
+        display: inline-block;
+        font-family: var(--font-display);
+        font-size: 11px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-bottom-width: 2px;
+        border-radius: 3px;
+        padding: 1px 7px;
+        color: var(--text-hi);
+        margin: 0 1px;
+    }
+    table.ctrl-table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; font-size: 13px; }
+    table.ctrl-table th { text-align: left; color: var(--cyan); font-family: var(--font-display); font-size: 10.5px; letter-spacing: 1px; padding: 6px 10px; border-bottom: 1px solid var(--panel-line); }
+    table.ctrl-table td { padding: 7px 10px; color: var(--text-mid); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    table.ctrl-table tr:hover td { color: var(--text-hi); }
+
+    .doc-module-entry { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .doc-module-entry .dme-icon { width: 30px; height: 30px; flex-shrink: 0; color: var(--cyan); }
+    .doc-module-entry .dme-icon svg { width: 100%; height: 100%; }
+    .doc-module-entry .dme-title { font-family: var(--font-display); font-size: 13.5px; color: var(--text-hi); letter-spacing: 0.3px; margin-bottom: 3px; }
+    .doc-module-entry .dme-tag { font-size: 9.5px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-left: 8px; }
+    .doc-module-entry p { margin: 3px 0 0; }
+
+    .close-x {
+        position: absolute; top: 12px; right: 12px;
+        width: 30px; height: 30px; border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: var(--text-mid);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; z-index: 5;
+    }
+    .close-x:hover { color: var(--danger); border-color: var(--danger); }
+    .close-x svg { width: 14px; height: 14px; }
+
+    /* =========================================================
+       COUNTDOWN / VICTORY
+       ========================================================= */
+    #countdownLabel {
+        position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
+        font-family: var(--font-display); font-weight: 900;
+        color: #fff; text-shadow: 0 0 30px var(--cyan), 0 0 60px var(--violet);
+        pointer-events: none; z-index: 8;
+        animation: countPop 0.5s var(--ease);
+    }
+    @keyframes countPop { 0% { transform: translate(-50%,-50%) scale(0.4); opacity: 0; } 60% { transform: translate(-50%,-50%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1); opacity: 1; } }
+
+    #victoryScreen .console-panel { text-align: center; padding: 40px 40px 34px; }
+    .podium-icon { width: 64px; height: 64px; margin: 0 auto 10px; color: var(--gold); animation: chipFloat 2.4s ease-in-out infinite; }
+    #winnerText {
+        font-family: var(--font-display); font-weight: 900;
+        font-size: clamp(26px, 4vw, 40px);
+        margin: 0 0 6px;
+        color: #fff9ea;
+        animation: podiumGlow 1.1s ease-in-out infinite alternate;
+    }
+    #victorySub { color: var(--text-mid); font-size: 13px; margin: 0 0 22px; letter-spacing: 0.5px; }
+    .stat-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-chip {
+        background: var(--panel-bg-soft); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 4px; padding: 9px 16px; min-width: 90px;
+    }
+    .stat-chip .sc-val { font-family: var(--font-display); font-size: 18px; color: var(--cyan); font-weight: 700; }
+    .stat-chip .sc-label { font-size: 9.5px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+    #victoryHint { font-size: 11.5px; color: var(--text-dim); margin-top: 16px; letter-spacing: 0.3px; }
+
+    /* =========================================================
+       COPYRIGHT TAG
+       ========================================================= */
+    #copyrightTag {
+        position: fixed;
+        left: 10px;
+        bottom: 8px;
+        z-index: 50;
+        font-family: var(--font-body);
+        font-size: 10.5px;
+        letter-spacing: 0.6px;
+        color: rgba(160, 185, 220, 0.45);
+        pointer-events: none;
+        user-select: none;
+        text-shadow: 0 0 6px rgba(0,0,0,0.6);
+    }
+    #copyrightTag span { color: rgba(120, 220, 255, 0.5); }
+
+    /* =========================================================
+       MISC
+       ========================================================= */
+    .bot-speed-note { font-size: 10.5px; color: var(--text-dim); text-align: center; margin-top: -10px; margin-bottom: 18px; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 760px) {
+        .doc-shell { height: 92%; }
+        .doc-panel { flex-direction: column; }
+        .doc-tabs { width: 100%; display: flex; overflow-x: auto; padding: 8px; gap: 4px; border-right: none; border-bottom: 1px solid var(--panel-line); }
+        .doc-tab { flex-shrink: 0; margin-bottom: 0; }
+        .doc-content { padding: 18px 18px 30px; }
+        #uiPanel { width: 168px; }
+        .console-panel { padding: 20px 18px; }
+    }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <div id="canvasWrap">
+        <canvas id="gameCanvas"></canvas>
+        <div class="corner-frame"></div>
+        <div id="countdownLabel" style="display:none;"></div>
+    </div>
+    <div id="uiPanel">
+        <div class="hud-title"><span>FLEET STATUS</span><span id="hudClock">00:00</span></div>
+        <div id="fleetList"></div>
+        <div id="elimList"></div>
+        <div id="chatWrap">
+            <div class="hud-title"><span>COMBAT LOG</span></div>
+            <div id="chatLog"></div>
+        </div>
+        <div id="radarWrap">
+            <div class="hud-title"><span>TAC RADAR</span></div>
+            <canvas id="radarCanvas" width="180" height="180"></canvas>
+        </div>
+    </div>
+</div>
+
+<div id="lineupScreen" class="screen">
+    <div class="screen-inner" style="width:min(560px,92%);">
+        <div class="console-panel">
+            <p class="eyebrow">PRE-FLIGHT BRIEFING</p>
+            <h2 class="section-title">Fleet Lineup</h2>
+            <p class="section-sub">Everyone in this match, at a glance</p>
+            <div id="lineupList"></div>
+            <div class="btn-row" style="margin-top:18px;">
+                <button class="btn btn-primary" onclick="deployMatch()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    Deploy Fleet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="top-right-controls">
+    <button class="icon-btn" id="settingsGear" onclick="openSettings()" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+</div>
+
+<!-- ============ MAIN MENU ============ -->
+<div id="menu" class="screen active">
+    <div class="screen-inner">
+        <div class="console-panel">
+            <p class="eyebrow">FLEET COMMAND PROTOCOL</p>
+            <h1 class="logo-title">TOP DOWN SPACE</h1>
+            <p class="logo-sub">Command a growing fleet · Master the formation · Own the void</p>
+            <div class="btn-col" style="margin: 0 auto;">
+                <button class="btn btn-primary btn-full" onclick="showBotMenu(1)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 18-7-4-7 4z"></path></svg>
+                    1 Player
+                </button>
+                <button class="btn btn-primary btn-full" onclick="showBotMenu(2)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3l6 15-6-3.5L3 18z"></path><path d="M17 6l4 11-4-2.5-3 2.5z"></path></svg>
+                    2 Players
+                </button>
+                <button class="btn btn-primary btn-full" onclick="showBotMenu(3)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l5 13-5-3-5 3z"></path><path d="M4 9l3.5 9-3.5-2-2.4 2z"></path><path d="M20 9l-3.5 9 3.5-2 2.4 2z"></path></svg>
+                    3 Players
+                </button>
+            </div>
+            <div class="btn-row" style="margin-top:14px;">
+                <button class="btn btn-accent" onclick="openHowTo()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    How to Play &amp; Strategy Docs
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ BOT COUNT ============ -->
+<div id="botMenu" class="screen">
+    <div class="screen-inner">
+        <div class="console-panel">
+            <div class="breadcrumb"><span>New Match</span><span class="bc-dot"></span><span class="bc-current">Hostile Count</span></div>
+            <h2 class="section-title">Select Bot Count</h2>
+            <p class="section-sub">How many AI-controlled fleets will you face?</p>
+            <div class="option-grid" id="botCountGrid"></div>
+            <button class="btn btn-ghost" onclick="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+                Back
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ DIFFICULTY ============ -->
+<div id="difficultyMenu" class="screen">
+    <div class="screen-inner">
+        <div class="console-panel">
+            <div class="breadcrumb"><span>New Match</span><span class="bc-dot"></span><span>Hostile Count</span><span class="bc-dot"></span><span class="bc-current">Difficulty</span></div>
+            <h2 class="section-title">Select Bot Difficulty</h2>
+            <p class="section-sub">Higher tiers react faster, aim sharper, and push harder</p>
+            <div class="option-grid" id="difficultyGrid"></div>
+            <button class="btn btn-ghost" onclick="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+                Back
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ MODULES ============ -->
+<div id="moduleMenu" class="screen">
+    <div class="screen-inner" style="width:min(760px,94%);">
+        <div class="console-panel">
+            <div class="breadcrumb"><span>New Match</span><span class="bc-dot"></span><span>Hostile Count</span><span class="bc-dot"></span><span>Difficulty</span><span class="bc-dot"></span><span class="bc-current">Modules</span></div>
+            <h2 class="section-title">Configure Modules</h2>
+            <p class="section-sub">Rule-changing modifiers — mix freely, or launch a classic match with none</p>
+            <div id="presetGrid" class="preset-row"></div>
+            <div class="module-search-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+                <input type="text" id="moduleSearchInput" placeholder="Search modules by name or effect..." oninput="filterModules(this.value)">
+            </div>
+            <div class="module-toolbar">
+                <span class="module-count"><strong id="moduleActiveCount">0</strong> of <span id="moduleTotalCount">0</span> active</span>
+                <button class="link-btn" onclick="resetModules()">Reset all</button>
+            </div>
+            <div id="moduleScroll"></div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="startGame(botCount, true)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    Launch Fleet
+                </button>
+                <button class="btn btn-ghost" onclick="startGame(botCount, false)">Launch Classic (No Modules)</button>
+            </div>
+            <div style="height:10px;"></div>
+            <button class="btn btn-ghost btn-sm" onclick="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+                Back
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ VICTORY ============ -->
+<div id="victoryScreen" class="screen">
+    <div class="screen-inner">
+        <div class="console-panel">
+            <svg class="podium-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10l-1 8a4 4 0 0 1-8 0z"></path><path d="M5 4h2v4a3 3 0 0 1-3-3z"></path><path d="M19 4h-2v4a3 3 0 0 0 3-3z"></path></svg>
+            <p class="eyebrow">MATCH COMPLETE</p>
+            <h1 id="winnerText"></h1>
+            <p id="victorySub"></p>
+            <div class="stat-row" id="victoryStats"></div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="rematch()">Rematch</button>
+                <button class="btn btn-ghost" onclick="restartGame()">Main Menu</button>
+            </div>
+            <p id="victoryHint">Press any key to return to menu</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div id="settingsModal" class="screen">
+    <div class="screen-inner" style="width:min(460px,92%);">
+        <div class="console-panel" style="position:relative;">
+            <button class="close-x" onclick="closeSettings()" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="section-title">Settings</h2>
+            <p class="section-sub">Theme, display &amp; browser-tab preferences</p>
+            <div class="module-group-label" style="margin-top:0;">Theme</div>
+            <div id="themeGrid" class="theme-grid"></div>
+            <div class="module-group-label">Browser Tab</div>
+            <div class="module-card" id="newTabRow" style="cursor:default;">
+                <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"></rect><path d="M3 9h18"></path></svg></div>
+                <div class="mc-body">
+                    <div class="mc-title">Disguise as New Tab</div>
+                    <div class="mc-desc">Renames the browser tab title/icon to look like a blank New Tab page.</div>
+                </div>
+                <div class="mc-switch" id="newTabSwitch" onclick="toggleNewTab()"></div>
+            </div>
+            <div id="faviconOptions" class="btn-row" style="display:none; margin-top:10px;">
+                <button class="btn btn-ghost btn-sm" onclick="setFavicon('light')">Light Icon</button>
+                <button class="btn btn-ghost btn-sm" onclick="setFavicon('dark')">Dark Icon</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ HOW TO PLAY / DOCS ============ -->
+<div id="howToPlay" class="screen">
+    <div class="screen-inner doc-shell">
+        <div class="doc-panel" style="position:relative;">
+            <button class="close-x" onclick="closeHowTo()" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+            </button>
+            <nav class="doc-tabs">
+                <div class="doc-tab active" onclick="showDocTab('docBasics', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>Basics</div>
+                <div class="doc-tab" onclick="showDocTab('docControls', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"></path></svg>Controls</div>
+                <div class="doc-tab" onclick="showDocTab('docFleet', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 8-3-2-3 2z"></path><path d="M5 12l2 7-2-1.4L3.5 19z"></path><path d="M19 12l-2 7 2-1.4 1.5 1.4z"></path></svg>Fleet &amp; Formations</div>
+                <div class="doc-tab" onclick="showDocTab('docCombat', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path></svg>Combat &amp; Hazards</div>
+                <div class="doc-tab" onclick="showDocTab('docModules', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path><circle cx="8" cy="6" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="15" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="10" cy="18" r="1.6" fill="currentColor" stroke="none"></circle></svg>Modules</div>
+                <div class="doc-tab" onclick="showDocTab('docStrategy', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"></path><path d="M12 3a6 6 0 0 0-4 10.5c.6.6.9 1 1 2.5h6c.1-1.5.4-1.9 1-2.5A6 6 0 0 0 12 3z"></path></svg>Strategy</div>
+            </nav>
+            <div class="doc-content">
+
+                <div class="doc-page active" id="docBasics">
+                    <h3>What is Top Down Space?</h3>
+                    <p>Top Down Space is a fast, top-down free-for-all. You pilot a <strong>lead ship</strong> around an enclosed arena, grow it into a fleet by collecting power-ups, and fight other fleets — human or AI — until only one commander is left flying.</p>
+                    <p>Every match runs the same three phases:</p>
+                    <ol>
+                        <li><strong>Setup</strong> — choose how many human players (1–3), how many bot fleets (0–100), a bot difficulty tier, and any modules to enable.</li>
+                        <li><strong>Countdown &amp; Battle</strong> — a 3-second countdown, then free-for-all combat until one fleet remains.</li>
+                        <li><strong>Victory</strong> — the last surviving commander is declared the winner. Press any key, or use the buttons, to rematch or return to the menu.</li>
+                    </ol>
+                    <h3>Objective</h3>
+                    <p>Be the last fleet standing. A fleet is eliminated when it has zero ships left (or, under the <strong>3 Lives</strong> module, after its lives run out). There are no teams — everyone, human and bot alike, fights everyone else.</p>
+                    <h3>The Arena</h3>
+                    <p>Each match spawns fresh terrain: a starfield and drifting nebula for backdrop, 3 indestructible obstacles that block movement and bounce bullets, and up to 15–30 asteroids that drift, spin, and split when destroyed. Hazard and rule modules (see the <strong>Modules</strong> tab) can add gravity wells, more/bigger asteroids, quartered arenas, and more.</p>
+                    <div class="tip"><strong>New here?</strong> Start a 1 Player match against a couple of Standard bots with no modules to get a feel for movement and formations before diving into modifiers.</div>
+                </div>
+
+                <div class="doc-page" id="docControls">
+                    <h3>Movement Schemes</h3>
+                    <p>Up to three human pilots can play locally, each with a fixed control scheme:</p>
+                    <table class="ctrl-table">
+                        <tr><th>Pilot</th><th>Move</th><th>Turn</th><th>Formation</th><th>Dash</th></tr>
+                        <tr><td>Player 1</td><td><span class="key">W</span> / <span class="key">S</span></td><td><span class="key">A</span> / <span class="key">D</span></td><td><span class="key">E</span></td><td><span class="key">Q</span></td></tr>
+                        <tr><td>Player 2</td><td><span class="key">↑</span> / <span class="key">↓</span></td><td><span class="key">←</span> / <span class="key">→</span></td><td><span class="key">Shift</span></td><td><span class="key">/</span></td></tr>
+                        <tr><td>Player 3</td><td><span class="key">I</span> / <span class="key">K</span></td><td><span class="key">J</span> / <span class="key">L</span></td><td><span class="key">O</span></td><td><span class="key">U</span></td></tr>
+                    </table>
+                    <h3>Flight Model</h3>
+                    <p>Ships fly tank-style: the move keys accelerate forward or backward along your current facing, and the turn keys rotate that facing. Your lead ship coasts to a stop when you let go of the throttle — unless <strong>Zero-G Drift</strong> is active, in which case you keep momentum until you actively brake.</p>
+                    <h4>Firing</h4>
+                    <p>You never press a fire button — every ship in your fleet fires automatically on a cooldown, in the direction it's facing. A bigger fleet fires very slightly slower per-ship (cooldown scales up ~1.5% per extra ship) to keep huge fleets from becoming pure bullet hoses.</p>
+                    <h4>Dash</h4>
+                    <p>Tap your dash key for a burst of +4.5 speed lasting a quarter-second, on an 1.8-second cooldown. Dashing is your main dodge and gap-closer — it also leaves a bright particle trail behind your lead ship, both to look good and to telegraph to everyone on screen (bots included) that you just committed to a movement.</p>
+                    <h4>Changing Formation</h4>
+                    <p>Tap your formation key to cycle your escort ships to the next formation shape in the sequence. See the <strong>Fleet &amp; Formations</strong> tab for what each one does.</p>
+                </div>
+
+                <div class="doc-page" id="docFleet">
+                    <h3>Lead Ship vs. Escorts</h3>
+                    <p>Your first ship is the <strong>lead ship</strong> — the only one you steer directly. Every other ship in your fleet is an <strong>escort</strong> that automatically holds a position relative to the lead ship, based on your active formation, and always fires in whatever direction its formation slot points.</p>
+                    <p>Each ship carries its own HP pool independently (1000 HP by default, 300 HP for ships gained mid-match from power-ups). Losing your lead ship doesn't end your run — the next ship in line effectively becomes your new steering reference the moment it's the only one left, and you fight on until your <em>entire</em> fleet is destroyed.</p>
+                    <h3>Growing Your Fleet</h3>
+                    <p>Power-ups spawn periodically around the arena worth +2, +4, +6, +8, or +10 ships (smaller values are more common). Fly any ship in your fleet into one to instantly add that many escorts at your current position, up to the fleet cap (100 ships, or 1000 under the <strong>Max Ships 1000</strong> module).</p>
+                    <h3>Formations</h3>
+                    <p>Formations only change where your escorts sit and which way they aim — <strong>every escort fires every volley regardless of formation</strong>, so no formation deals more raw damage per volley than another. The difference is entirely about shot direction, footprint, and how easy your fleet is to read.</p>
+                    <h4>Standard Formations</h4>
+                    <div id="docFormationsStandard"></div>
+                    <h4>Roman's Expansion Formations</h4>
+                    <p>Enabling the <strong>Roman's Expansion</strong> module replaces the standard rotation with six more deliberate, shape-based formations, each with its own firing pattern:</p>
+                    <div id="docFormationsRoman"></div>
+                    <div class="tip"><strong>Strategy — Roman's Disguise:</strong> Disguise collapses your whole fleet onto the exact position of your lead ship and locks every escort's cannon to fire in the lead ship's direction. Total damage output is unchanged (every ship still fires every volley) — what you gain is that your fleet <em>reads as a single small ship</em> to onlookers (including bots), so enemies routinely misjudge your real HP pool and firepower until they're already in your kill zone. The trade-off: with the whole fleet stacked on one point, a single well-placed collision or explosion can catch several escorts in quick succession, so it rewards aggressive, decisive play over a long drawn-out brawl.</div>
+                </div>
+
+                <div class="doc-page" id="docCombat">
+                    <h3>Damage Reference</h3>
+                    <table class="ctrl-table">
+                        <tr><th>Interaction</th><th>Effect</th></tr>
+                        <tr><td>Bullet → enemy ship</td><td>40 damage (double under <strong>Critical Hits</strong> on a crit roll)</td></tr>
+                        <tr><td>Bullet → asteroid</td><td>40 damage; asteroids below a size threshold split in two on death</td></tr>
+                        <tr><td>Bullet → obstacle</td><td>Bounces (up to 2 bounces) instead of dealing damage — obstacles are indestructible</td></tr>
+                        <tr><td>Ship ↔ enemy ship collision</td><td>Both take damage scaled to combined closing speed, plus a knockback shove</td></tr>
+                        <tr><td>Ship ↔ asteroid collision</td><td>12 damage to both, plus a shove</td></tr>
+                        <tr><td>Ship ↔ obstacle</td><td>No damage — you're physically blocked and pushed out</td></tr>
+                    </table>
+                    <h3>Asteroids</h3>
+                    <p>Asteroids drift and spin freely, bounce off arena walls and obstacles, and split into two half-sized, lower-HP fragments when destroyed (unless already small). They deal contact damage to any ship that touches them, so weaving through a field is a real risk, not just scenery.</p>
+                    <h3>Obstacles</h3>
+                    <p>Three static obstacles spawn away from starting positions each match. They physically block ships and ricochet bullets — useful as cover, but also capable of bouncing a shot back the way it came.</p>
+                    <h3>Gravity Wells (module)</h3>
+                    <p>When active, three wells pull every ship and bullet in the arena toward their centers with inverse-square force — strong up close, negligible far away. They warp both approach lines and bullet trajectories, rewarding pilots who route <em>around</em> a well to sling-shot past it rather than fighting the pull head-on.</p>
+                </div>
+
+                <div class="doc-page" id="docModules">
+                    <h3>Modules</h3>
+                    <p>Modules are optional rule modifiers you toggle before launch. They're saved between sessions, so your last loadout is remembered next time you open this menu. The launch screen also offers <strong>presets</strong> — Vanilla, Chaos, Tactical, Bullet Hell, Zen, and Hardcore — one-click bundles that set a whole loadout at once; picking any individual module afterward simply edits from there. A search bar on that screen filters modules by name or effect. Below is every module in extreme detail — the short card in the launch menu is intentionally the summary; this is the full explanation.</p>
+                    <div id="docModulesList"></div>
+                </div>
+
+                <div class="doc-page" id="docStrategy">
+                    <h3>Reading Bot Behavior</h3>
+                    <p>Bots aren't random — they run a small state machine that re-evaluates roughly every <code>reaction time</code> (Novice ~450ms down to Deity ~40ms) and settles into one of six states:</p>
+                    <ul>
+                        <li><strong>Patrolling</strong> — no threat or opportunity nearby; wanders to random points.</li>
+                        <li><strong>Chasing / Aggressive Chase</strong> — an enemy is within the bot's style-based chase range. Deity bots above 75% fleet HP upgrade to <em>Aggressive Chase</em>, which extends their effective firing range further.</li>
+                        <li><strong>Power-Up Chase</strong> — a power-up is within awareness range <em>and</em> the bot's fleet is under half the ship cap. Bots stop actively growing once they're past that halfway point, favoring combat instead.</li>
+                        <li><strong>Retreating</strong> — total fleet HP has dropped under the bot's own retreat threshold (see below — this is no longer one fixed number). The bot runs toward a random point near arena-center rather than a fixed safe zone.</li>
+                        <li><strong>Evading</strong> — an enemy bullet is within 60 units of the bot's lead ship, regardless of health. This is a hard reflex, not a health check.</li>
+                    </ul>
+                    <div class="tip"><strong>Exploit it:</strong> Since Evading triggers purely on bullet proximity, a single well-aimed shot can interrupt a bot's chase entirely — useful for buying a few seconds against a fleet that outguns you. And since Retreating sends bots toward the arena's center rather than a real hiding spot, a wounded bot is often <em>more</em> predictable to finish off than a healthy one.</div>
+                    <h3>Know Your Opponent — Personality &amp; Color</h3>
+                    <p>Every bot is one of four playing styles, and — this matters — <strong>each style has its own signature color family</strong>. You can read a bot's temperament from across the arena before it ever fires a shot:</p>
+                    <ul>
+                        <li><strong>Reds / oranges — Aggressive.</strong> Largest chase range, biggest speed boost when hunting, and it keeps fighting down to roughly 25% fleet HP before it even considers breaking off. Treat any red ship as committed the moment it notices you.</li>
+                        <li><strong>Cyans / blues — Defensive.</strong> Shortest chase range and the earliest retreat threshold of the four (about 45%). A blue bot that starts losing an exchange will often bail well before it's actually in danger — press an early advantage and it may simply leave.</li>
+                        <li><strong>Golds / yellows — Dashy.</strong> Frequent, aggressive dashing and the fastest speed boost in pursuit, with a mid-range retreat threshold (~30%). Predict its dash cooldown rather than its current position — it won't be where it looks like it's headed.</li>
+                        <li><strong>Violets / purples — Formation.</strong> Favors coordinated positioning over raw speed or aggression, retreats around 35% HP. Most likely to actually make good use of Roman's Expansion formations if that module is active.</li>
+                    </ul>
+                    <p>Each bot also carries its own name (Reaper, Warden, Flash, Tactician, and so on) drawn from its style — the Combat Log on the right will call bots out by name, and their color in the fleet list and on the radar always matches their personality family.</p>
+                    <h3>Aim Locks &amp; Angles</h3>
+                    <p>Bots only fire when they're aimed close enough to their target — within roughly 17° for Deity, and roughly 40° for everyone else. Strafing perpendicular to a non-Deity bot, rather than fleeing straight backward, denies it a firing angle far more effectively than raw distance does. Deity's tighter window and near-zero aim error make this much harder to pull off against the top tier.</p>
+                    <h3>Difficulty at a Glance</h3>
+                    <table class="ctrl-table">
+                        <tr><th>Tier</th><th>Character</th></tr>
+                        <tr><td>Novice</td><td>Slow to react, wide aim spread, short awareness — forgiving for learning formations and dashing.</td></tr>
+                        <tr><td>Standard</td><td>Balanced all-round opponent; the default recommendation for most matches.</td></tr>
+                        <tr><td>Elite</td><td>Fast reactions and tight aim; punishes predictable, straight-line movement.</td></tr>
+                        <tr><td>Deity</td><td>Near-instant reactions, minimal aim error, and the largest awareness &amp; engagement range in the game. Expect to be hunted the moment you're spotted.</td></tr>
+                    </table>
+                    <h3>General Tactics</h3>
+                    <ul>
+                        <li><strong>Bait power-ups.</strong> Bots under half fleet cap will break off combat to chase a power-up — contest one deliberately to pull a bot out of position.</li>
+                        <li><strong>Fight near obstacles, not asteroids.</strong> Obstacles bounce bullets and block movement without damaging you; asteroids damage everyone who touches them, friend or foe.</li>
+                        <li><strong>Use formations defensively in the open, offensively in a corner.</strong> A spread formation (Swarm, Diamond) is harder to alpha-strike with one shot; a stacked one (Disguise, Compact) concentrates your presence when you're about to commit to a kill.</li>
+                        <li><strong>Watch the radar.</strong> The HUD's tactical radar shows every living fleet and hazard at a glance — use it to avoid getting sandwiched between two chasers.</li>
+                        <li><strong>Dash to deny, not just to flee.</strong> A dash through a bot's firing line breaks its angle lock and often forces it out of an aim-lock state entirely.</li>
+                        <li><strong>Target the color you can beat.</strong> In a mixed bot lobby, a Defensive (cyan) bot under pressure often disengages before it dies — it's the easiest style to rout, not necessarily the easiest to kill. An Aggressive (red) bot rarely gives you that option.</li>
+                        <li><strong>Track HP bars, not just positions.</strong> Every lead ship now shows a small health bar overhead — glance at it before committing to a fight instead of guessing from how long an exchange has gone on.</li>
+                    </ul>
+                    <h3>New Module Tactics</h3>
+                    <ul>
+                        <li><strong>Burst Fire</strong> rewards patience: don't trigger a burst the instant a target is in view — wait for the moment you expect it to still be in your sights a quarter-second later, since you're committed to all three shots and then a real gap in your fire.</li>
+                        <li><strong>Homing Shots</strong> matters most at medium range — up close it can't turn fast enough to matter, and at long range the target usually moves out of the curve radius first. Use it to punish targets crossing your firing line rather than ones running straight away.</li>
+                        <li><strong>Overdrive</strong> turns your dash into an offensive tool: dash <em>into</em> a firefight, not just out of one, and use the damage-resistance window to force a trade you'd otherwise lose.</li>
+                        <li><strong>Ricochet Rounds</strong> makes edges and corners dangerous for everyone, including you — funneling a fight toward the arena's center denies the enemy free wall bounces just as much as it denies you.</li>
+                        <li><strong>Debris Field</strong> punishes greedy asteroid clearing — if you're farming a dense asteroid cluster for splits, plan an exit line before you start, not after the cloud is already there.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="copyrightTag">© <span id="copyYear"></span> Top Down Space — <span>Zachary-Cheung</span></div>
+
+<script>
+/* =========================================================================
+   TOP DOWN SPACE
+   Single-file rebuild. Sections:
+   1. DOM refs & core state
+   2. Module + formation definitions (single source of truth for UI + docs)
+   3. Icon library (inline SVG)
+   4. Audio engine
+   5. Menu navigation & UI building
+   6. Game setup (start/restart/rematch)
+   7. Drawing helpers
+   8. Player/bot update logic
+   9. World spawning & updates (asteroids, obstacles, stars, powerups, etc.)
+   10. Collision detection
+   11. Main loop & boot
+   ========================================================================= */
+
+/* ---------------------- 1. DOM refs & core state ---------------------- */
+let gameContainer, canvas, ctx, canvasWrap, radarCanvas, radarCtx, uiPanel,
+    menu, botMenu, difficultyMenu, moduleMenu, howToPlay, settingsModal, victoryScreen, lineupScreen,
+    winnerText, victorySub, victoryStats, victoryHint, fleetList, elimList, hudClock, countdownLabel, chatLogEl;
+
+let victoryDisplayTime = 0;
+let playerCount = 0;
+let lastTime = performance.now();
+let botCount = 0;
+let gameState = 'menu';
+let eliminations = [];
+let frameCount = 0;
+let countdownStart = 0;
+let countdownValue = 3;
+let chaosTimer = 0;
+let matchStartTime = 0;
+let lastCountdownShown = null;
+const MAX_PARTICLES = 2200;
+let MAX_SHIPS_PER_PLAYER = 100;
+const PLAYER_SPEED = { max: 1.5, min: -0.9, acceleration: 0.08, deceleration: 0.94 };
+const MIN_DISTANCE = 100;
+const ASTEROID_SPAWN_DISTANCE = 100;
+const sidebarWidth = 260;
+
+const players = [];
+const menuBots = [];
+const asteroids = [];
+const obstacles = [];
+const particles = [];
+const powerUps = [];
+const stars = [];
+const nebula = [];
+const gravityWells = [];
+const debrisClouds = [];
+const keys = {};
+const damageDisplays = [];
+const formationDisplays = [];
+const powerUpDisplays = [];
+let chatLog = [];
+const CHAT_LOG_MAX = 60;
+let selectedDifficulty = null;
+let MAX_ASTEROIDS = 15;
+let lastLaunch = { bots: 0, withModules: false };
+
+function rand(a, b) { return a + Math.random() * (b - a); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+/* Adaptive render quality — keeps big bot-count matches playable */
+function perfTier() {
+    let totalShips = 0;
+    for (let i = 0; i < players.length; i++) totalShips += players[i].ships.length;
+    if (modules.chromebookMode || totalShips > 500) return 'low';
+    if (totalShips > 180) return 'medium';
+    return 'high';
+}
+
+/* ---------------------- 2. Module & formation definitions ---------------------- */
+const MODULE_DEFS = [
+    // --- Hazards ---
+    { id: 'noAsteroids', group: 'Hazards', label: 'No Asteroids',
+      desc: 'Clears the arena of all asteroids.',
+      detail: 'Removes every asteroid from the arena for the whole match — no drifting rocks, no splitting fragments, no incidental collision damage. Pure ship-vs-ship (and ship-vs-obstacle) combat. Good for tight formation practice or when a huge bot count already makes the arena chaotic enough on its own.' },
+    { id: 'doubleAsteroids', group: 'Hazards', label: 'Double Asteroids',
+      desc: 'Doubles the asteroid count (15 → 30).',
+      detail: 'Raises the asteroid cap from 15 to 30. More debris to dodge, more incidental damage between careless fleets, and more free cover for pilots who like using rocks to break an enemy\u2019s line of fire or herd bots into a hazard.' },
+    { id: 'bigAsteroids', group: 'Hazards', label: 'Heavy Asteroids',
+      desc: 'Asteroids spawn ~60% larger and tougher.',
+      detail: 'Every asteroid — including ones spawned mid-match by Chaos Mode\u2019s Asteroid Shower event — spawns roughly 60% larger with proportionally more HP. Bigger hitboxes are harder to avoid, but also much easier to farm for splitting fragments once you\u2019ve got sustained fire on one. Pairs well with Double Asteroids for a genuinely hazardous arena.' },
+    { id: 'gravityWells', group: 'Hazards', label: 'Gravity Wells',
+      desc: 'Adds 3 wells that pull ships and bullets.',
+      detail: 'Spawns three gravity wells at random positions. Every ship and every bullet in the arena is pulled toward the nearest well\u2019s center with inverse-square force — strong at close range, negligible far away. Straight-line approaches get bent and bullet trajectories curve, so routing around a well to sling-shot past it beats fighting the pull head-on. Chaos Mode\u2019s Gravity Shift event can relocate all three wells mid-fight without warning.' },
+    { id: 'chaosMode', group: 'Hazards', label: 'Chaos Mode',
+      desc: 'Random hazard events every 30 seconds.',
+      detail: 'Every 30 seconds, one random event fires: an Asteroid Shower (10 fresh asteroids burst into the arena), a Power-Up Storm (5 power-ups spawn at once), or — only while Gravity Wells is also active — a Gravity Shift that instantly relocates all three wells. Keeps long matches from going stale and punishes commanders who tune out mid-fight.' },
+    { id: 'debrisField', group: 'Hazards', label: 'Debris Field',
+      desc: 'Destroyed asteroids leave a lingering damage cloud.',
+      detail: 'Every time an asteroid is destroyed, it leaves behind a drifting cloud of debris roughly where it died, which keeps ticking light damage into any ship that lingers inside it for a few seconds before dispersing. Clearing an asteroid field stops being purely beneficial — you have to actually fly through the mess you just made, or route around it.' },
+
+    // --- Fleet & Combat ---
+    { id: 'doubleHealth', group: 'Fleet & Combat', label: 'Double Health',
+      desc: 'Doubles every ship\u2019s max HP.',
+      detail: 'Every ship\u2019s HP pool doubles: 2000 for full-price ships, 600 for ones gained from power-ups. Fights last noticeably longer and reward sustained formations over a single alpha strike. Stacks well with Shield Regen for very tanky fleets.' },
+    { id: 'oneShot', group: 'Fleet & Combat', label: 'One Shot',
+      desc: 'Every ship has exactly 1 HP.',
+      detail: 'Every ship — lead, escort, or power-up spawn — has exactly 1 HP. Any bullet, collision, or asteroid touch is lethal instantly. Positioning and formation spread matter enormously, since a stray shot into a clustered fleet can end multiple ships over a few frames. Shield Regen has essentially no effect under this module.' },
+    { id: 'doublePowerUps', group: 'Fleet & Combat', label: 'Double Power-Ups',
+      desc: 'Doubles the power-up spawn rate.',
+      detail: 'Roughly doubles how often power-ups appear. Fleets grow faster and the ship cap becomes reachable much earlier in a match, shifting the game\u2019s center of gravity toward large-fleet formation play sooner rather than later.' },
+    { id: 'maxShips1000', group: 'Fleet & Combat', label: 'Max Ships 1000',
+      desc: 'Raises the fleet cap from 100 to 1000.',
+      detail: 'Raises the maximum ships any single fleet can hold from 100 to 1000. Matches with heavy power-up density or long play time can turn into genuinely massive formations — expect a real performance cost at that scale, especially combined with a high bot count. Chromebook Mode is worth pairing with this.' },
+    { id: 'threeLives', group: 'Fleet & Combat', label: '3 Lives',
+      desc: 'Respawn up to 3 times before elimination.',
+      detail: 'Instead of being eliminated the instant your fleet hits zero ships, you respawn with a single fresh ship at a random position — up to twice more (three lives total) before final elimination. Turns early aggressive plays into a resource you can afford to spend more freely.' },
+    { id: 'shieldRegen', group: 'Fleet & Combat', label: 'Shield Regen',
+      desc: 'Ships slowly heal if undamaged for a few seconds.',
+      detail: 'Any ship that hasn\u2019t taken damage in the last 4 seconds begins regenerating HP over time, up to its own maximum. Disengaging becomes a real defensive option rather than just a delay tactic — but the rate is modest, so it rewards fully breaking contact rather than circling just outside effective range. Has essentially no effect under One Shot, since 1 HP ships have nothing to regenerate toward.' },
+    { id: 'criticalHits', group: 'Fleet & Combat', label: 'Critical Hits',
+      desc: '15% chance for a bullet to deal double damage.',
+      detail: 'Every bullet that lands has a 15% chance to critically hit for double damage (80 instead of 40), shown with a distinct gold damage number. Adds swinginess to firefights — a critical hit can turn a losing exchange around, which makes sustained, high-volume fire more valuable than ever since more shots means more rolls.' },
+    { id: 'magnetPowerups', group: 'Fleet & Combat', label: 'Power Magnet',
+      desc: 'Power-ups drift toward nearby ships.',
+      detail: 'Any power-up within about 160 units of a ship gently drifts toward it instead of sitting still, making pickups slightly more forgiving to grab and slightly harder to deny by flying past at a distance. Multiple nearby fleets contesting the same power-up each pull it toward themselves, so contested power-ups feel noticeably more chaotic and reactive.' },
+    { id: 'driftMode', group: 'Fleet & Combat', label: 'Zero-G Drift',
+      desc: 'Removes automatic deceleration — true momentum flight.',
+      detail: 'Normally your lead ship coasts to a stop when you release the throttle. Under Zero-G Drift, it doesn\u2019t — you keep your current velocity indefinitely unless you actively burn the reverse-thrust key to slow down, exactly like a real inertial spacecraft. Turning only changes your facing (and future thrust direction), not your current motion, so momentum and facing can point in completely different directions. A much higher skill ceiling for movement — worth trying against a lower bot difficulty first.' },
+    { id: 'romansExpansion', group: 'Fleet & Combat', label: 'Roman\u2019s Expansion',
+      desc: 'Swaps in 6 shape-based Roman formations.',
+      detail: 'Replaces the standard six formations with six deliberate, named shapes — Rectangle, Circle, Disguise, Trap, Trinity (Horizontal), and Trinity (Vertical) — each with its own escort layout and firing pattern. See the Fleet & Formations tab in the docs for a full breakdown of each shape.' },
+    { id: 'stealthMode', group: 'Fleet & Combat', label: 'Stealth Mode',
+      desc: 'Ships are invisible unless they\u2019ve fired recently.',
+      detail: 'Ships render as invisible on screen unless they\u2019ve fired a shot within the last 2 seconds — holding fire, or simply staying out of engagement range so your automatic weapons haven\u2019t triggered, keeps your fleet\u2019s position hidden. The instant your guns fire, you\u2019re visible again for a couple of seconds. Rewards patient positioning and ambush play over constant aggression.' },
+    { id: 'burstFire', group: 'Fleet & Combat', label: 'Burst Fire',
+      desc: 'Ships fire in quick 3-round bursts instead of a steady stream.',
+      detail: 'Replaces the steady one-shot-at-a-time rhythm with 3-round bursts: three quick shots close together, then a longer pause before the next burst. Total damage per second lands close to normal, but it\u2019s lumpy — you get a strong hit if all three connect, and a real gap in your fire while the next burst spools up. Rewards timing your bursts for when a target is actually in your sights rather than just holding an angle.' },
+    { id: 'homingShots', group: 'Fleet & Combat', label: 'Homing Shots',
+      desc: 'Bullets gently curve toward the nearest enemy in flight.',
+      detail: 'Every bullet in flight gets a small steering nudge each frame toward whichever enemy ship is nearest to it at that moment — not a hard lock, just enough curve to forgive a slightly early or late shot. Point-blank snap shots and very long-range shots barely notice the difference; it matters most in the awkward mid-range where a bullet has time to correct course before it would have otherwise missed.' },
+    { id: 'overdrive', group: 'Fleet & Combat', label: 'Overdrive',
+      desc: 'Dashing grants a brief burst of damage resistance.',
+      detail: 'For about a second after you dash, your lead ship takes half damage from anything that hits it — bullets, collisions, asteroids, all of it. Turns your dash from a pure repositioning tool into a genuine "punch through" option: timed right, you can dash straight through a firing line that would otherwise have shredded you. The window is short, so it rewards committing to the dash rather than using it defensively from a distance.' },
+    { id: 'ricochetRounds', group: 'Fleet & Combat', label: 'Ricochet Rounds',
+      desc: 'Bullets bounce off the arena walls instead of despawning.',
+      detail: 'Normally a bullet that reaches the edge of the arena is simply gone. With Ricochet Rounds, it bounces back in instead — on top of the bounces it can already get from obstacles. Missed shots stay dangerous for longer, corners and edges become genuinely risky places to linger, and a chaotic match can fill the arena with bullets that are still very much live.' },
+
+    // --- Visual & Performance ---
+    { id: 'chromebookMode', group: 'Visual & Performance', label: 'Chromebook Mode',
+      desc: 'Reduces visual effects for weaker hardware.',
+      detail: 'Cuts particle emission roughly in half, halves the background starfield and nebula density, and disables the heavier glow/gradient rendering on ships, bullets and effects. Turn this on if the game is chugging on integrated graphics — it changes nothing about the rules, only the render cost.' },
+    { id: 'pixelMode', group: 'Visual & Performance', label: 'Pixel Mode',
+      desc: 'Renders the canvas with a chunky pixel-art filter.',
+      detail: 'Applies pixelated image scaling to the canvas for a chunkier, more retro arcade look. Purely cosmetic — hitboxes, damage and physics are completely unaffected.' },
+    { id: 'smallMode', group: 'Visual & Performance', label: 'Small Mode',
+      desc: 'Shrinks ships, asteroids and text for longer games.',
+      detail: 'Scales down ship size, asteroid size, obstacle size and on-screen text across the board. Smaller hitboxes mean more of the arena is open space relative to any given ship, which tends to stretch matches out — good for very high player/bot counts where a full-size arena would be pure gridlock.' },
+
+    // --- Rule-Changers ---
+    { id: 'infiniteArena', group: 'Rule-Changers', label: 'Infinite Arena',
+      desc: 'Wraps ships and bullets around the screen edges.',
+      detail: 'Removes the arena\u2019s hard walls. Anything that reaches an edge — ships, bullets and particles — wraps to the opposite side instead of bouncing or stopping. Removes the \u201Cpin an opponent against the wall\u201D tactic entirely and makes long-range sniping unreliable, since a missed bullet simply reappears elsewhere and keeps flying.' },
+    { id: 'separation', group: 'Rule-Changers', label: 'Separation',
+      desc: 'Quarters the map; barriers fall as players die.',
+      detail: 'Splits the arena into four quarters at the start, with each player assigned to one. Invisible barriers keep you inside your quarter as long as more than one fleet remains alive there; once your quarter is down to a single surviving fleet, its barrier opens, gradually funneling everyone toward a final confrontation instead of an all-at-once brawl from the first second.' }
+];
+
+const MODULE_GROUPS = ['Hazards', 'Fleet & Combat', 'Visual & Performance', 'Rule-Changers'];
+
+// selectedModules = the persisted picks shown/edited in the module menu.
+// modules = the ACTUAL snapshot in effect for the current match (set once in
+// startGame). Keeping these separate is what makes "Launch Classic" truly
+// classic, and stops a stale saved module (e.g. 3 Lives) from silently
+// staying active in a match where the player never asked for it.
+let selectedModules = {};
+MODULE_DEFS.forEach(m => { selectedModules[m.id] = false; });
+let modules = {};
+MODULE_DEFS.forEach(m => { modules[m.id] = false; });
+
+function persistSelectedModules() {
+    try { localStorage.setItem('gameModules', JSON.stringify(selectedModules)); } catch (e) {}
+}
+function loadModules() {
+    try {
+        const saved = localStorage.getItem('gameModules');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            MODULE_DEFS.forEach(m => { if (typeof parsed[m.id] === 'boolean') selectedModules[m.id] = parsed[m.id]; });
+        }
+    } catch (e) { /* localStorage unavailable — fall back to defaults */ }
+}
+loadModules();
+
+const FORMATION_DEFS = {
+    standard: [
+        { id: 'diamond', label: 'Diamond', desc: 'Escorts stack in a zigzag wedge behind and around the lead ship — a balanced, moderately spread default.' },
+        { id: 'compact', label: 'Compact', desc: 'Escorts pull into a tight ring close around the lead ship. Small footprint and easy to lose track of individually, but a single area hit can tag several at once.' },
+        { id: 'swarm', label: 'Swarm', desc: 'Like Compact but at roughly double the radius — a wide, loose ring that spreads risk across a larger area.' },
+        { id: 'line-h', label: 'Line (Horizontal)', desc: 'Escorts line up side-by-side, perpendicular to the lead ship\u2019s heading. A strong forward-facing wall of fire, but exposed along the flanks.' },
+        { id: 'line-v', label: 'Line (Vertical)', desc: 'Escorts stack directly ahead and behind the lead ship\u2019s line of travel — a narrow profile that\u2019s hard to flank but easy to strafe across.' },
+        { id: 'spiral', label: 'Spiral', desc: 'The default start formation. Escorts wind outward in a loose spiral for a natural, organic spread that\u2019s difficult for bots to read cleanly.' }
+    ],
+    roman: [
+        { id: 'romansRectangle', label: 'Rectangle', desc: 'Escorts hold the four sides of a hollow rectangle around your lead ship, each side\u2019s guns aimed outward across that edge — a full perimeter of fire. Because each escort\u2019s aim direction locks in world space rather than continuously re-aiming with your heading, the perimeter stays cleanest while you hold a steady course; hard turns will rotate the box faster than the gun angles follow.' },
+        { id: 'romansCircle', label: 'Circle', desc: 'Escorts form an even ring around the lead ship with guns aimed across the ring in a fixed rotational sense, set in world space the moment you enter the formation.' },
+        { id: 'romansDisguise', label: 'Disguise', desc: 'Every escort collapses onto the lead ship\u2019s exact position and fires in the lead ship\u2019s own direction, always — this is the only Roman formation whose aim keeps up with your turning in real time. See the strategy callout below.' },
+        { id: 'romansTrap', label: 'Trap', desc: 'The same ring layout as Circle, but with the opposite firing rotation — together the two formations cover an identical shape with mirrored fire patterns, useful for varying how a surrounded target gets hit.' },
+        { id: 'romansTrinityH', label: 'Trinity (Horizontal)', desc: 'Escorts split into three horizontal rows. Every escort in every Trinity formation locks its gun to one single fixed heading regardless of the lead ship\u2019s own facing, concentrating the whole fleet\u2019s fire along one world-space axis — handy for holding a chokepoint while you reposition freely around it.' },
+        { id: 'romansTrinityV', label: 'Trinity (Vertical)', desc: 'The same fixed single-direction volley as Trinity (Horizontal), but escorts arrange into three vertical columns instead of rows.' }
+    ]
+};
+
+function formationLabel(id) {
+    const all = FORMATION_DEFS.standard.concat(FORMATION_DEFS.roman);
+    const f = all.find(x => x.id === id);
+    return f ? f.label : id;
+}
+
+/* ---------------------- 3. Icon library (inline SVG) ---------------------- */
+function svgIcon(inner) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
+}
+const ICONS = {
+    noAsteroids: svgIcon('<path d="M12 3l5 3-1 6-5 4-5-4-1-6z" opacity="0.4"></path><path d="M5 5l14 14"></path>'),
+    doubleAsteroids: svgIcon('<path d="M6 3l3 2-1 3-3 1-2-2z"></path><path d="M15 11l3 2-1 3-3 1-2-2z"></path>'),
+    bigAsteroids: svgIcon('<path d="M12 2.5l5.5 3-1 6.5-4.5 4-4.5-4-1-6.5z"></path>'),
+    doubleHealth: svgIcon('<path d="M12 21s-7-4.35-9.5-8.5C.7 8.4 3 5 6.5 5 9 5 12 7 12 7s3-2 5.5-2C21 5 23.3 8.4 21.5 12.5 19 16.65 12 21 12 21z"></path>'),
+    oneShot: svgIcon('<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3.4"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path>'),
+    doublePowerUps: svgIcon('<path d="M12 2l2.6 5.4 6 .8-4.3 4.2 1 6-5.3-2.9-5.3 2.9 1-6L3.4 8.2l6-.8z"></path>'),
+    maxShips1000: svgIcon('<path d="M4 18L12 3l8 15z"></path><path d="M4 18h16"></path><path d="M9 18l3-6 3 6"></path>'),
+    chromebookMode: svgIcon('<rect x="3" y="4" width="18" height="12" rx="1"></rect><path d="M1 19.5h22l-2-3.5H3z"></path>'),
+    pixelMode: svgIcon('<rect x="3" y="3" width="6.5" height="6.5"></rect><rect x="14.5" y="3" width="6.5" height="6.5"></rect><rect x="3" y="14.5" width="6.5" height="6.5"></rect><rect x="14.5" y="14.5" width="6.5" height="6.5"></rect>'),
+    smallMode: svgIcon('<rect x="9" y="9" width="6" height="6"></rect><path d="M15 9l6-6M9 9L3 3M15 15l6 6M9 15l-6 6"></path>'),
+    threeLives: svgIcon('<path d="M12 20.5s-6.2-3.9-8.2-7.6C2.4 10.1 4 7.5 6.6 7.5c2.2 0 4 1.9 5.4 3.6 1.4-1.7 3.2-3.6 5.4-3.6 2.6 0 4.2 2.6 2.8 5.4-2 3.7-8.2 7.6-8.2 7.6z" opacity="0.9"></path><path d="M5 5.2a2 2 0 1 1 0-.1M19 5.2a2 2 0 1 1 0-.1" stroke-width="0"></path>'),
+    romansExpansion: svgIcon('<path d="M4 21V10M20 21V10M9 21V14M15 21V14"></path><path d="M2.5 10L12 4l9.5 6"></path><path d="M2 21h20"></path>'),
+    gravityWells: svgIcon('<path d="M12 3a9 9 0 1 0 6.4 15.4"></path><path d="M12 7.2a4.8 4.8 0 1 0 3.4 8.2"></path><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle>'),
+    stealthMode: svgIcon('<path d="M2 12s3.6-6.2 10-6.2S22 12 22 12s-3.6 6.2-10 6.2S2 12 2 12z" opacity="0.35"></path><path d="M2.5 2.5l19 19"></path>'),
+    chaosMode: svgIcon('<path d="M13 2L4.5 14h6.5l-1 8L20 9.5h-6.5z"></path>'),
+    infiniteArena: svgIcon('<path d="M6.5 8.7a3.3 3.3 0 1 0 0 6.6c2.7 0 4.3-2.2 5.5-3.3 1.2 1.1 2.8 3.3 5.5 3.3a3.3 3.3 0 1 0 0-6.6c-2.7 0-4.3 2.2-5.5 3.3-1.2-1.1-2.8-3.3-5.5-3.3z"></path>'),
+    separation: svgIcon('<rect x="3" y="3" width="7.5" height="7.5"></rect><rect x="13.5" y="3" width="7.5" height="7.5"></rect><rect x="3" y="13.5" width="7.5" height="7.5"></rect><rect x="13.5" y="13.5" width="7.5" height="7.5"></rect>'),
+    shieldRegen: svgIcon('<path d="M12 2.5l7.5 3.6v5.4c0 4.8-3.2 8-7.5 9.5-4.3-1.5-7.5-4.7-7.5-9.5V6.1z"></path><path d="M12 8v7M8.5 11.5h7"></path>'),
+    criticalHits: svgIcon('<path d="M12 2l2.4 6.1L21 10l-6.1 2.4L12 19l-2.4-6.1L3 10l6.1-2.1z"></path>'),
+    magnetPowerups: svgIcon('<path d="M7 3.5v8a5 5 0 0 0 10 0v-8"></path><path d="M7 3.5H2.7M17 3.5h4.3M7 9H2.7M17 9h4.3"></path>'),
+    driftMode: svgIcon('<path d="M2.5 12h5M2 8h3.5M2 16h3.5"></path><path d="M12 3l7 18-7-4-7 4z"></path>'),
+    burstFire: svgIcon('<circle cx="4" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="11" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="18" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><path d="M2 6l20 0" opacity="0"></path>'),
+    homingShots: svgIcon('<circle cx="17" cy="7" r="2.2"></circle><path d="M3 20C6 12 10 9 15 8.2"></path><path d="M12.5 8.8l2.5-1 .3 2.7"></path>'),
+    overdrive: svgIcon('<path d="M12 2.5l7.5 3.6v5.4c0 4.8-3.2 8-7.5 9.5-4.3-1.5-7.5-4.7-7.5-9.5V6.1z" opacity="0.5"></path><path d="M13 7l-4 6h3l-1 5 4.5-6.5H12z"></path>'),
+    ricochetRounds: svgIcon('<path d="M3 5v14"></path><path d="M21 5v14"></path><path d="M3 8l8 4-8 4"></path><path d="M21 8l-8 4 8 4"></path>'),
+    debrisField: svgIcon('<circle cx="7" cy="9" r="1.4" fill="currentColor" stroke="none"></circle><circle cx="14" cy="7" r="1" fill="currentColor" stroke="none"></circle><circle cx="17" cy="13" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="9" cy="16" r="1.1" fill="currentColor" stroke="none"></circle><circle cx="13" cy="14" r="0.8" fill="currentColor" stroke="none"></circle><circle cx="12" cy="11" r="7.5" opacity="0.35"></circle>'),
+    bots: svgIcon('<circle cx="12" cy="12" r="2.6"></circle><path d="M12 9.4V5M12 19v-4.4M9.4 12H5M19 12h-4.4"></path><circle cx="5" cy="5" r="1" fill="currentColor" stroke="none"></circle><circle cx="19" cy="5" r="1" fill="currentColor" stroke="none"></circle><circle cx="5" cy="19" r="1" fill="currentColor" stroke="none"></circle><circle cx="19" cy="19" r="1" fill="currentColor" stroke="none"></circle>'),
+    zeroBots: svgIcon('<circle cx="12" cy="12" r="8.5"></circle><path d="M7 7l10 10"></path>'),
+    tierNovice: svgIcon('<path d="M6 15.5L12 9l6 6.5"></path>'),
+    tierStandard: svgIcon('<path d="M6 9l6-6 6 6"></path><path d="M6 17l6-6 6 6"></path>'),
+    tierElite: svgIcon('<path d="M13 2L4.5 14h6.5l-1 8L20 9.5h-6.5z"></path>'),
+    tierDeity: svgIcon('<path d="M3 8l4.5 3L12 4l4.5 7L21 8l-2 10H5z"></path>'),
+    book: svgIcon('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>'),
+    back: svgIcon('<path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path>')
+};
+function iconFor(id) { return ICONS[id] || ''; }
+
+/* ---------------------- 4. Audio engine ---------------------- */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const masterGain = audioCtx.createGain();
+masterGain.gain.value = 0.85;
+const compressor = audioCtx.createDynamicsCompressor();
+masterGain.connect(compressor);
+compressor.connect(audioCtx.destination);
+
+function resumeAudio() { if (audioCtx.state === 'suspended') audioCtx.resume(); }
+['pointerdown', 'keydown'].forEach(evt => document.addEventListener(evt, resumeAudio, { passive: true }));
+
+const noiseBuffer = (function buildNoise() {
+    const dur = 1.0;
+    const size = Math.floor(audioCtx.sampleRate * dur);
+    const buf = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+    return buf;
+})();
+
+let frameSoundBudget = 0;
+const FRAME_SOUND_CAP = 14;
+function resetSoundBudget() { frameSoundBudget = 0; }
+function soundAllowed() {
+    if (frameSoundBudget >= FRAME_SOUND_CAP) return false;
+    frameSoundBudget++;
+    return true;
+}
+
+function makeOsc(type, freq) {
+    const o = audioCtx.createOscillator();
+    o.type = type;
+    o.frequency.value = freq;
+    return o;
+}
+function envGain(duration, peak, attack) {
+    const g = audioCtx.createGain();
+    const now = audioCtx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.001), now + (attack || 0.005));
+    g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    return g;
+}
+function playNoiseBurst(duration, volume, filterFreq, filterType) {
+    const now = audioCtx.currentTime;
+    const src = audioCtx.createBufferSource();
+    src.buffer = noiseBuffer;
+    const maxStart = Math.max(0.01, noiseBuffer.duration - duration - 0.02);
+    const offset = Math.random() * maxStart;
+    const f = audioCtx.createBiquadFilter();
+    f.type = filterType || 'bandpass';
+    f.frequency.value = filterFreq || 1200;
+    const g = envGain(duration, volume, 0.004);
+    src.connect(f); f.connect(g); g.connect(masterGain);
+    src.start(now, offset, duration);
+}
+
+function playLaser() {
+    if (!soundAllowed()) return;
+    const now = audioCtx.currentTime;
+    const o = makeOsc('square', 760);
+    o.frequency.exponentialRampToValueAtTime(320, now + 0.09);
+    const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 3200;
+    const g = envGain(0.11, 0.14, 0.003);
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.12);
+}
+function playHit() {
+    if (!soundAllowed()) return;
+    const now = audioCtx.currentTime;
+    const o = makeOsc('square', 520);
+    o.frequency.exponentialRampToValueAtTime(170, now + 0.14);
+    const g = envGain(0.16, 0.2, 0.002);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.17);
+    playNoiseBurst(0.08, 0.08, 1800, 'highpass');
+}
+function playCrit() {
+    if (!soundAllowed()) return;
+    const now = audioCtx.currentTime;
+    const o1 = makeOsc('square', 760);
+    o1.frequency.exponentialRampToValueAtTime(260, now + 0.2);
+    const o2 = makeOsc('sawtooth', 1400);
+    o2.frequency.exponentialRampToValueAtTime(2200, now + 0.08);
+    const g = envGain(0.22, 0.24, 0.002);
+    o1.connect(g); o2.connect(g); g.connect(masterGain);
+    o1.start(now); o1.stop(now + 0.22);
+    o2.start(now); o2.stop(now + 0.1);
+}
+function playExplosion(size) {
+    if (!soundAllowed()) return;
+    const now = audioCtx.currentTime;
+    const o = makeOsc('sine', 95);
+    o.frequency.exponentialRampToValueAtTime(32, now + 0.5);
+    const og = envGain(0.55, 0.32, 0.005);
+    o.connect(og); og.connect(masterGain);
+    o.start(now); o.stop(now + 0.56);
+    playNoiseBurst(0.4, Math.min(0.34, 0.13 + size * 0.01), 750, 'lowpass');
+}
+function playAsteroidBreak() {
+    if (!soundAllowed()) return;
+    playNoiseBurst(0.28, 0.22, 500, 'lowpass');
+    const now = audioCtx.currentTime;
+    const o = makeOsc('sawtooth', 180);
+    o.frequency.exponentialRampToValueAtTime(65, now + 0.25);
+    const g = envGain(0.28, 0.17, 0.004);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.3);
+}
+function playThud() {
+    if (!soundAllowed()) return;
+    const now = audioCtx.currentTime;
+    const o = makeOsc('sine', 150);
+    o.frequency.exponentialRampToValueAtTime(55, now + 0.2);
+    const g = envGain(0.24, 0.26, 0.004);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.24);
+    playNoiseBurst(0.08, 0.08, 350, 'lowpass');
+}
+function playRicochet() {
+    if (!soundAllowed()) return;
+    const now = audioCtx.currentTime;
+    const o = makeOsc('triangle', rand(1400, 1900));
+    o.frequency.exponentialRampToValueAtTime(700, now + 0.08);
+    const g = envGain(0.09, 0.15, 0.001);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.1);
+}
+function playSolidImpact() {
+    if (!soundAllowed()) return;
+    playNoiseBurst(0.12, 0.14, 300, 'lowpass');
+}
+function playDash() {
+    const now = audioCtx.currentTime;
+    const o = makeOsc('sawtooth', 220);
+    o.frequency.exponentialRampToValueAtTime(1000, now + 0.16);
+    const f = audioCtx.createBiquadFilter(); f.type = 'highpass';
+    f.frequency.setValueAtTime(200, now);
+    f.frequency.exponentialRampToValueAtTime(1400, now + 0.18);
+    const g = envGain(0.22, 0.2, 0.003);
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.24);
+}
+function playRespawn() {
+    const now = audioCtx.currentTime;
+    [0, 1, 2].forEach((n, idx) => {
+        const o = makeOsc('triangle', 500 + idx * 220);
+        const g = envGain(0.22, 0.13, 0.004);
+        o.connect(g); g.connect(masterGain);
+        o.start(now + idx * 0.05); o.stop(now + idx * 0.05 + 0.24);
+    });
+}
+function playPowerUp(count) {
+    const now = audioCtx.currentTime;
+    const notes = [0, 4, 7, 12];
+    const n = Math.min(3, Math.floor(count / 2));
+    for (let i = 0; i <= n; i++) {
+        const freq = 480 * Math.pow(2, notes[Math.min(i, notes.length - 1)] / 12);
+        const o = makeOsc('triangle', freq);
+        const g = envGain(0.3, 0.12, 0.004);
+        o.connect(g); g.connect(masterGain);
+        const t0 = now + i * 0.045;
+        o.start(t0); o.stop(t0 + 0.32);
+    }
+}
+function playUIClick() {
+    const now = audioCtx.currentTime;
+    const o = makeOsc('square', 1000);
+    o.frequency.exponentialRampToValueAtTime(1400, now + 0.04);
+    const g = envGain(0.06, 0.1, 0.001);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.07);
+}
+function playCountdownBeep(isGo) {
+    const now = audioCtx.currentTime;
+    const o = makeOsc('sine', isGo ? 1100 : 700);
+    const g = envGain(isGo ? 0.4 : 0.22, 0.28, 0.003);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + (isGo ? 0.42 : 0.24));
+}
+function playVictoryFanfare() {
+    const now = audioCtx.currentTime;
+    const seq = [0, 4, 7, 12, 16];
+    seq.forEach((n, i) => {
+        const freq = 260 * Math.pow(2, n / 12);
+        const o = makeOsc(i === seq.length - 1 ? 'triangle' : 'sawtooth', freq);
+        const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 2400;
+        const g = envGain(0.9, 0.16, 0.01);
+        o.connect(f); f.connect(g); g.connect(masterGain);
+        const t0 = now + i * 0.14;
+        o.start(t0); o.stop(t0 + 0.9);
+    });
+    playNoiseBurst(0.7, 0.1, 3000, 'highpass');
+}
+function playElimination() {
+    const now = audioCtx.currentTime;
+    const o = makeOsc('sawtooth', 500);
+    o.frequency.exponentialRampToValueAtTime(120, now + 0.5);
+    const g = envGain(0.5, 0.2, 0.006);
+    o.connect(g); g.connect(masterGain);
+    o.start(now); o.stop(now + 0.55);
+}
+
+/* ---------------------- 5. Menu navigation & UI building ---------------------- */
+function activateScreen(el) {
+    [menu, botMenu, difficultyMenu, moduleMenu, victoryScreen, lineupScreen].forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function showBotMenu(count) { playerCount = count; activateScreen(botMenu); }
+function showDifficultyMenu(bots) {
+    botCount = bots;
+    if (bots === 0) { selectedDifficulty = null; activateScreen(moduleMenu); renderModuleGrid(); }
+    else { activateScreen(difficultyMenu); }
+}
+function showModuleMenu(difficulty) { selectedDifficulty = difficulty; activateScreen(moduleMenu); renderModuleGrid(); }
+function goBack() {
+    if (moduleMenu.classList.contains('active')) activateScreen(botCount === 0 ? botMenu : difficultyMenu);
+    else if (difficultyMenu.classList.contains('active')) activateScreen(botMenu);
+    else if (botMenu.classList.contains('active')) activateScreen(menu);
+}
+
+function openHowTo() { howToPlay.classList.add('active'); }
+function closeHowTo() { howToPlay.classList.remove('active'); }
+function showDocTab(id, el) {
+    document.querySelectorAll('.doc-page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(id);
+    if (page) page.classList.add('active');
+    document.querySelectorAll('.doc-tab').forEach(t => t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    const content = document.querySelector('.doc-content');
+    if (content) content.scrollTop = 0;
+}
+
+const THEMES = [
+    { id: 'nebula', label: 'Nebula' },
+    { id: 'minimal', label: 'Minimal' },
+    { id: 'solar', label: 'Solar' },
+    { id: 'neon', label: 'Neon Arcade' },
+    { id: 'emerald', label: 'Emerald' }
+];
+let currentTheme = 'nebula';
+(function loadTheme() {
+    try {
+        const saved = localStorage.getItem('gameTheme');
+        if (saved && THEMES.some(t => t.id === saved)) currentTheme = saved;
+    } catch (e) {}
+    if (currentTheme === 'nebula') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', currentTheme);
+})();
+function applyTheme(id) {
+    currentTheme = id;
+    if (id === 'nebula') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', id);
+    try { localStorage.setItem('gameTheme', id); } catch (e) {}
+    renderThemeGrid();
+}
+function renderThemeGrid() {
+    const el = document.getElementById('themeGrid');
+    if (!el) return;
+    el.innerHTML = THEMES.map(t =>
+        '<div class="theme-card' + (t.id === currentTheme ? ' active' : '') + '" onclick="applyTheme(\'' + t.id + '\')">' +
+        '<div class="theme-swatch ' + t.id + '"></div><div class="theme-label">' + t.label + '</div></div>'
+    ).join('');
+}
+
+function openSettings() { settingsModal.classList.add('active'); renderThemeGrid(); }
+function closeSettings() { settingsModal.classList.remove('active'); }
+
+let isNewTabMode = false;
+function toggleNewTab() {
+    isNewTabMode = !isNewTabMode;
+    const favicon = document.getElementById('favicon');
+    const row = document.getElementById('newTabRow');
+    const faviconOptions = document.getElementById('faviconOptions');
+    if (isNewTabMode) {
+        document.title = 'New Tab';
+        row.classList.add('on');
+        faviconOptions.style.display = 'flex';
+        setFavicon('light');
+    } else {
+        document.title = 'Top Down Space';
+        row.classList.remove('on');
+        faviconOptions.style.display = 'none';
+        favicon.href = 'https://topdownspace.github.io/favicon-32x32.png';
+    }
+}
+function setFavicon(mode) {
+    const favicon = document.getElementById('favicon');
+    if (mode === 'light') favicon.href = 'chromenewtab32x32.png';
+    else if (mode === 'dark') favicon.href = 'darkchromenewtab32x32.png';
+}
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn');
+    if (btn) {
+        btn.classList.remove('clicked'); void btn.offsetWidth; btn.classList.add('clicked');
+        setTimeout(() => btn.classList.remove('clicked'), 380);
+        playUIClick();
+    }
+});
+
+function renderBotCountGrid() {
+    const counts = [0, 1, 2, 3, 5, 10, 20, 30, 50, 100];
+    const grid = document.getElementById('botCountGrid');
+    grid.innerHTML = counts.map(n => {
+        const icon = n === 0 ? ICONS.zeroBots : ICONS.bots;
+        return '<div class="option-card" onclick="showDifficultyMenu(' + n + ')">' + icon +
+            '<span class="oc-label">' + n + '</span><span class="oc-sub">' + (n === 1 ? 'Bot' : 'Bots') + '</span></div>';
+    }).join('');
+}
+
+function renderDifficultyGrid() {
+    const tiers = [
+        { id: 'novice', label: 'Novice', sub: 'Relaxed', tier: 'novice', icon: ICONS.tierNovice },
+        { id: 'standard', label: 'Standard', sub: 'Balanced', tier: 'standard', icon: ICONS.tierStandard },
+        { id: 'elite', label: 'Elite', sub: 'Aggressive', tier: 'elite', icon: ICONS.tierElite },
+        { id: 'Deity', label: 'Deity', sub: 'Ruthless', tier: 'deity', icon: ICONS.tierDeity }
+    ];
+    const grid = document.getElementById('difficultyGrid');
+    grid.innerHTML = tiers.map(t =>
+        '<div class="option-card tier-' + t.tier + '" onclick="showModuleMenu(\'' + t.id + '\')">' + t.icon +
+        '<span class="oc-label">' + t.label + '</span><span class="oc-sub">' + t.sub + '</span></div>'
+    ).join('');
+}
+
+let moduleSearchQuery = '';
+function filterModules(query) {
+    moduleSearchQuery = (query || '').trim().toLowerCase();
+    renderModuleGrid();
+}
+function renderModuleGrid() {
+    const scroll = document.getElementById('moduleScroll');
+    let html = '';
+    let anyShown = false;
+    MODULE_GROUPS.forEach(group => {
+        const items = MODULE_DEFS.filter(m => m.group === group).filter(m =>
+            !moduleSearchQuery || m.label.toLowerCase().includes(moduleSearchQuery) || m.desc.toLowerCase().includes(moduleSearchQuery)
+        );
+        if (!items.length) return;
+        anyShown = true;
+        html += '<div class="module-group-label">' + group + '</div><div class="module-grid">';
+        items.forEach(m => {
+            const on = selectedModules[m.id];
+            html += '<div class="module-card' + (on ? ' on' : '') + '" onclick="toggleModule(\'' + m.id + '\')">' +
+                '<div class="mc-icon">' + iconFor(m.id) + '</div>' +
+                '<div class="mc-body"><div class="mc-title">' + m.label + '</div><div class="mc-desc">' + m.desc + '</div></div>' +
+                '<div class="mc-switch"></div></div>';
+        });
+        html += '</div>';
+    });
+    if (!anyShown) html = '<p style="text-align:center;color:var(--text-dim);font-size:13px;padding:20px 0;">No modules match "' + moduleSearchQuery + '".</p>';
+    scroll.innerHTML = html;
+    updateModuleCount();
+}
+function toggleModule(id) { selectedModules[id] = !selectedModules[id]; persistSelectedModules(); renderModuleGrid(); renderPresetGrid(); }
+function updateModuleCount() {
+    const activeCount = MODULE_DEFS.filter(m => selectedModules[m.id]).length;
+    const activeEl = document.getElementById('moduleActiveCount');
+    const totalEl = document.getElementById('moduleTotalCount');
+    if (activeEl) activeEl.textContent = activeCount;
+    if (totalEl) totalEl.textContent = MODULE_DEFS.length;
+}
+function resetModules() { MODULE_DEFS.forEach(m => selectedModules[m.id] = false); persistSelectedModules(); renderModuleGrid(); renderPresetGrid(); }
+
+const MODULE_PRESETS = [
+    { id: 'vanilla', label: 'Vanilla', desc: 'No modules — classic rules.', set: {} },
+    { id: 'chaos', label: 'Chaos', desc: 'Busy, hazardous, unpredictable.', set: { chaosMode: true, doubleAsteroids: true, bigAsteroids: true, gravityWells: true, criticalHits: true, magnetPowerups: true } },
+    { id: 'tactical', label: 'Tactical', desc: 'Slower, formation-driven, strategic.', set: { romansExpansion: true, stealthMode: true, shieldRegen: true, threeLives: true } },
+    { id: 'bulletHell', label: 'Bullet Hell', desc: 'Huge fleets, constant crossfire.', set: { burstFire: true, criticalHits: true, doublePowerUps: true, maxShips1000: true, ricochetRounds: true } },
+    { id: 'zen', label: 'Zen', desc: 'Calm and forgiving — good for learning.', set: { noAsteroids: true, driftMode: true, doubleHealth: true } },
+    { id: 'hardcore', label: 'Hardcore', desc: 'One hit, no walls, no mercy.', set: { oneShot: true, infiniteArena: true, chaosMode: true } }
+];
+function applyPreset(id) {
+    const preset = MODULE_PRESETS.find(p => p.id === id);
+    if (!preset) return;
+    MODULE_DEFS.forEach(m => { selectedModules[m.id] = !!preset.set[m.id]; });
+    persistSelectedModules();
+    renderModuleGrid();
+    renderPresetGrid();
+}
+function renderPresetGrid() {
+    const el = document.getElementById('presetGrid');
+    if (!el) return;
+    el.innerHTML = MODULE_PRESETS.map(p => {
+        const isActive = MODULE_DEFS.every(m => !!selectedModules[m.id] === !!p.set[m.id]);
+        return '<div class="preset-card' + (isActive ? ' active' : '') + '" onclick="applyPreset(\'' + p.id + '\')">' +
+            '<div class="preset-name">' + p.label + '</div><div class="preset-desc">' + p.desc + '</div></div>';
+    }).join('');
+}
+
+function renderDocModules() {
+    const el = document.getElementById('docModulesList');
+    el.innerHTML = MODULE_DEFS.map(m =>
+        '<div class="doc-module-entry"><div class="dme-icon">' + iconFor(m.id) + '</div>' +
+        '<div><div class="dme-title">' + m.label + '<span class="dme-tag">' + m.group + '</span></div>' +
+        '<p>' + m.detail + '</p></div></div>'
+    ).join('');
+}
+function renderLineup() {
+    const el = document.getElementById('lineupList');
+    if (!el) return;
+    el.innerHTML = players.map(p => {
+        const tag = p.isBot
+            ? p.style.charAt(0).toUpperCase() + p.style.slice(1) + ' \u00b7 ' + (p.difficulty === 'Deity' ? 'Deity' : p.difficulty.charAt(0).toUpperCase() + p.difficulty.slice(1))
+            : 'YOU';
+        return '<div class="lineup-row' + (p.isBot ? '' : ' lineup-you') + '">' +
+            '<span class="lineup-swatch" style="background:' + p.traitColor + '"></span>' +
+            '<span class="lineup-name">' + p.name + '</span>' +
+            '<span class="lineup-tag">' + tag + '</span></div>';
+    }).join('');
+}
+
+function renderDocFormations() {
+    document.getElementById('docFormationsStandard').innerHTML = FORMATION_DEFS.standard.map(f =>
+        '<p><strong>' + f.label + '.</strong> ' + f.desc + '</p>').join('');
+    document.getElementById('docFormationsRoman').innerHTML = FORMATION_DEFS.roman.map(f =>
+        '<p><strong>' + f.label + '.</strong> ' + f.desc + '</p>').join('');
+}
+
+/* ---------------------- 6. Game setup ---------------------- */
+function shipHP(tier) {
+    if (tier === 'small') return modules.oneShot ? 1 : (modules.doubleHealth ? 600 : 300);
+    return modules.oneShot ? 1 : (modules.doubleHealth ? 2000 : 1000);
+}
+function makeShip(x, y, angle, tier) {
+    const hp = shipHP(tier || 'full');
+    return { x, y, angle: angle || 0, speed: 0, hp, maxHp: hp, dx: 0, dy: 0, lastHit: 0 };
+}
+function randomTraitColor() {
+    return '#' + Math.floor(Math.random() * 256).toString(16).padStart(2, '0') +
+                 Math.floor(Math.random() * 256).toString(16).padStart(2, '0') +
+                 Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+}
+function formatTime(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0');
+}
+
+function initMenuBots() {
+    menuBots.length = 0;
+    const positions = [];
+    const getSafePosition = () => {
+        let x, y;
+        do {
+            x = rand(12.5, canvas.width - 12.5);
+            y = rand(12.5, canvas.height - 12.5);
+        } while (positions.some(pos => Math.hypot(pos.x - x, pos.y - y) < MIN_DISTANCE));
+        positions.push({ x, y });
+        return { x, y };
+    };
+    const botStyles = ['aggressive', 'defensive', 'dashy', 'formation'];
+    const usedNames = new Set();
+    for (let i = 0; i < 8; i++) {
+        const pos = getSafePosition();
+        const style = botStyles[Math.floor(Math.random() * botStyles.length)];
+        menuBots.push({
+            ships: [makeShip(pos.x, pos.y, 0, 'full')],
+            keys: { up: '', down: '', left: '', right: '', form: '', dash: '' },
+            bullets: [],
+            alive: true,
+            formation: 'spiral',
+            lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
+            isBot: true, difficulty: 'standard', style, traitColor: pickBotColor(style),
+            name: pickBotName(style, usedNames),
+            lastMessageTime: 0, botState: 'patrolling', target: null, lastDecision: 0
+        });
+    }
+}
+
+function startGame(bots, withModules) {
+    botCount = bots;
+    // Snapshot the modules actually in effect for THIS match. "Launch Classic"
+    // now genuinely means classic — it no longer silently inherits whatever
+    // happens to be toggled (or saved from a previous session) in selectedModules.
+    modules = {};
+    MODULE_DEFS.forEach(m => { modules[m.id] = withModules ? !!selectedModules[m.id] : false; });
+    lastLaunch = { bots, withModules };
+
+    MAX_SHIPS_PER_PLAYER = modules.maxShips1000 ? 1000 : 100;
+    MAX_ASTEROIDS = modules.noAsteroids ? 0 : (modules.doubleAsteroids ? 30 : 15);
+
+    players.length = 0;
+    menuBots.length = 0;
+    asteroids.length = 0;
+    obstacles.length = 0;
+    particles.length = 0;
+    powerUps.length = 0;
+    gravityWells.length = 0;
+    debrisClouds.length = 0;
+    damageDisplays.length = 0;
+    formationDisplays.length = 0;
+    powerUpDisplays.length = 0;
+    chatLog.length = 0; renderChatLog();
+    eliminations = [];
+
+    const positions = [];
+    const getSafePosition = (quarter) => {
+        let x, y;
+        do {
+            if (modules.separation) {
+                if (quarter === 0) { x = rand(0, canvas.width / 2); y = rand(0, canvas.height / 2); }
+                else if (quarter === 1) { x = rand(canvas.width / 2, canvas.width); y = rand(0, canvas.height / 2); }
+                else if (quarter === 2) { x = rand(0, canvas.width / 2); y = rand(canvas.height / 2, canvas.height); }
+                else { x = rand(canvas.width / 2, canvas.width); y = rand(canvas.height / 2, canvas.height); }
+            } else {
+                x = rand(12.5, canvas.width - 12.5);
+                y = rand(12.5, canvas.height - 12.5);
+            }
+        } while (positions.some(pos => Math.hypot(pos.x - x, pos.y - y) < MIN_DISTANCE));
+        positions.push({ x, y });
+        return { x, y };
+    };
+
+    const defaultControls = [
+        { up: 'w', down: 's', left: 'a', right: 'd', form: 'e', dash: 'q' },
+        { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', form: 'Shift', dash: '/' },
+        { up: 'i', down: 'k', left: 'j', right: 'l', form: 'o', dash: 'u' }
+    ];
+    for (let i = 0; i < playerCount; i++) {
+        const pos = getSafePosition(i % 4);
+        const traitColor = ['#ff4d6d', '#2fe0ff', '#3de8a5'][i % 3];
+        players.push({
+            ships: [makeShip(pos.x, pos.y, 0, 'full')],
+            keys: defaultControls[i % 3],
+            bullets: [],
+            alive: true,
+            formation: modules.romansExpansion ? 'romansRectangle' : 'spiral',
+            lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
+            isBot: false, difficulty: 'player', traitColor,
+            name: 'Pilot ' + (i + 1),
+            lastMessageTime: 0,
+            lives: modules.threeLives ? 3 : 1,
+            quarter: modules.separation ? i % 4 : null
+        });
+    }
+
+    const botStyles = ['aggressive', 'defensive', 'dashy', 'formation'];
+    const usedBotNames = new Set();
+    for (let i = 0; i < botCount; i++) {
+        const pos = getSafePosition(i % 4);
+        const style = botStyles[Math.floor(Math.random() * botStyles.length)];
+        players.push({
+            ships: [makeShip(pos.x, pos.y, 0, 'full')],
+            keys: { up: '', down: '', left: '', right: '', form: '', dash: '' },
+            bullets: [],
+            alive: true,
+            formation: modules.romansExpansion ? 'romansRectangle' : 'spiral',
+            lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
+            isBot: true, difficulty: selectedDifficulty || 'standard', style, traitColor: pickBotColor(style),
+            name: pickBotName(style, usedBotNames),
+            lastMessageTime: 0, botState: 'patrolling', target: null, lastDecision: 0,
+            lives: modules.threeLives ? 3 : 1,
+            quarter: modules.separation ? i % 4 : null
+        });
+    }
+
+    frameCount = 0;
+    chaosTimer = 0;
+    canvas.style.imageRendering = modules.pixelMode ? 'pixelated' : 'optimizeSpeed';
+    renderLineup();
+    activateScreen(lineupScreen);
+}
+
+function deployMatch() {
+    gameState = 'countdown';
+    countdownStart = Date.now();
+    countdownValue = 3;
+    lastCountdownShown = null;
+    matchStartTime = Date.now();
+
+    lineupScreen.classList.remove('active');
+    uiPanel.style.display = 'block';
+    countdownLabel.style.display = 'block';
+
+    spawnObstacles();
+    spawnStars();
+    spawnNebula();
+    if (modules.gravityWells) spawnGravityWells();
+    spawnAsteroids();
+
+    pushSystemChat('COUNTDOWN INITIATED — ' + players.length + ' FLEET' + (players.length === 1 ? '' : 'S') + ' DETECTED');
+    if (players.length <= 12) players.forEach(p => { if (p.isBot) showBotMessage(p, 'intro'); });
+}
+
+function restartGame() {
+    gameState = 'menu';
+    victoryScreen.classList.remove('active');
+    lineupScreen.classList.remove('active');
+    countdownLabel.style.display = 'none';
+    activateScreen(menu);
+    uiPanel.style.display = 'none';
+    eliminations = [];
+    players.length = 0;
+    asteroids.length = 0;
+    obstacles.length = 0;
+    particles.length = 0;
+    powerUps.length = 0;
+    gravityWells.length = 0;
+    debrisClouds.length = 0;
+    chatLog.length = 0; renderChatLog();
+    initMenuBots();
+    frameCount = 0;
+}
+
+function rematch() {
+    victoryScreen.classList.remove('active');
+    startGame(lastLaunch.bots, lastLaunch.withModules);
+}
+
+/* ---------------------- 7. Drawing helpers ---------------------- */
+function shadeColor(hex, percent) {
+    const f = parseInt(hex.slice(1), 16), t = percent < 0 ? 0 : 255, p = Math.abs(percent) / 100;
+    const R = f >> 16, G = (f >> 8) & 0x00FF, B = f & 0x0000FF;
+    return '#' + (0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 +
+        (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1);
+}
+
+const BOT_PERSONAS = {
+    aggressive: {
+        colors: ['#ff4d6d', '#ff6b4d', '#ff3355'],
+        names: ['Reaper', 'Viper', 'Blaze', 'Havoc', 'Ronin', 'Fury', 'Marauder'],
+        chat: {
+            intro: ['{name} reporting — I don\u2019t do retreats.', '{name} online. Let\u2019s make this quick.', '{name}, hunting.'],
+            chasing: ['I\u2019m coming for you, {target}!', '{target}, you\u2019re mine!', 'Target locked: {target}.', 'No escape, {target}.'],
+            lowHP: ['Still standing. Barely.', 'Scratched, not stopped.', 'This isn\u2019t over.'],
+            evading: ['Not today!', 'Missed me!', 'Too slow!'],
+            powerUp: ['More firepower, let\u2019s go.', 'Reinforcements — good.', 'Now I\u2019m dangerous.'],
+            patrol: ['Where\u2019s the fight?', 'Too quiet out here.', 'Show yourselves.'],
+            kill: ['{target} — down.', 'One less problem.', 'Cleared.'],
+            death: ['Worth it.', '...good shot.', 'See you next match.']
+        }
+    },
+    defensive: {
+        colors: ['#2fe0ff', '#4d9fff', '#2fb8e0'],
+        names: ['Warden', 'Sentinel', 'Bastion', 'Aegis', 'Bulwark', 'Custodian', 'Rampart'],
+        chat: {
+            intro: ['{name} holding position.', '{name}, standing by.', '{name} — defense is the best offense.'],
+            chasing: ['Tracking {target}. Staying cautious.', 'Keeping {target} in range.', '{target}, I see you.'],
+            lowHP: ['Hull integrity dropping.', 'Shields failing — falling back.', 'Damage report: not good.'],
+            evading: ['Evasive maneuvers.', 'Breaking contact.', 'Repositioning.'],
+            powerUp: ['Reserves secured.', 'Fleet reinforced.', 'Good, I needed that.'],
+            patrol: ['Holding the line.', 'All quiet for now.', 'Watching the perimeter.'],
+            kill: ['{target} neutralized.', 'Threat removed.', 'Contained.'],
+            death: ['Line... broken.', 'Hold the rest of it for me.', 'Good fight.']
+        }
+    },
+    dashy: {
+        colors: ['#ffb545', '#ffd166', '#ff9d3d'],
+        names: ['Flash', 'Comet', 'Bolt', 'Quicksilver', 'Streak', 'Nova', 'Blitz'],
+        chat: {
+            intro: ['{name}, ready to move.', '{name} — try to keep up.', '{name} online, let\u2019s fly.'],
+            chasing: ['{target}, here I come!', 'Closing in on {target} fast.', 'Catch me if you can — wait, I\u2019m catching you, {target}.'],
+            lowHP: ['Speed won\u2019t save me forever...', 'Getting sloppy — need to move faster.', 'Taking hits, staying mobile.'],
+            evading: ['Dash!', 'Too fast for that!', 'Nice try.'],
+            powerUp: ['More ships, more speed!', 'Let\u2019s gooo.', 'Fleet\u2019s faster now.'],
+            patrol: ['Can\u2019t sit still.', 'Scouting ahead.', 'Where\u2019s the action?'],
+            kill: ['{target}? Gone.', 'Blink and you missed it.', 'Too easy.'],
+            death: ['Ran out of... road.', 'Worth the ride.', 'Catch you next time.']
+        }
+    },
+    formation: {
+        colors: ['#9a6bff', '#b56bff', '#7c5cff'],
+        names: ['Tactician', 'Marshal', 'Architect', 'Weaver', 'Overseer', 'Vanguard', 'Cartographer'],
+        chat: {
+            intro: ['{name}, formation ready.', '{name} — every ship has a place.', '{name} online. Positions set.'],
+            chasing: ['{target} is surrounded. Just doesn\u2019t know it yet.', 'Encircling {target}.', '{target}, the formation closes.'],
+            lowHP: ['Formation compromised.', 'Losing cohesion.', 'Fleet integrity critical.'],
+            evading: ['Reforming.', 'Adjusting the pattern.', 'Not falling for that.'],
+            powerUp: ['Fleet expanded. Recalculating formation.', 'More pieces for the pattern.', 'Good — more options now.'],
+            patrol: ['Analyzing the field.', 'Formation holding steady.', 'Waiting for the right shape.'],
+            kill: ['{target} — accounted for.', 'As planned.', 'One fewer variable.'],
+            death: ['The pattern... incomplete.', 'Miscalculated.', 'Well played.']
+        }
+    }
+};
+function pickBotName(style, usedNames) {
+    const pool = BOT_PERSONAS[style].names;
+    let candidate = pool.find(n => !usedNames.has(n));
+    if (!candidate) {
+        const base = pool[Math.floor(Math.random() * pool.length)];
+        let suffix = 2;
+        candidate = base + ' ' + suffix;
+        while (usedNames.has(candidate)) { suffix++; candidate = base + ' ' + suffix; }
+    }
+    usedNames.add(candidate);
+    return candidate;
+}
+function pickBotColor(style) {
+    const colors = BOT_PERSONAS[style].colors;
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function drawShip(ship, totalEntities, isLead, isPlayer, player) {
+    if (modules.stealthMode && Date.now() - player.lastShot > 2000) return;
+    const tier = perfTier();
+    const size = modules.smallMode ? Math.max(1, 6 - totalEntities * 0.01) : Math.max(2, 12 - totalEntities * 0.02);
+
+    if (ship.lastAngle === undefined) ship.lastAngle = ship.angle;
+    let turnDelta = ship.angle - ship.lastAngle;
+    turnDelta = ((turnDelta + Math.PI) % (Math.PI * 2)) - Math.PI;
+    ship.lastAngle = ship.angle;
+    const bank = tier === 'low' ? 0 : clamp(1 - Math.abs(turnDelta) * 2.6, 0.82, 1);
+
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.rotate(ship.angle);
+    if (bank !== 1) ctx.scale(1, bank);
+
+    if (ship.speed > 0.05 && tier !== 'low') {
+        const flareLen = size * (0.9 + Math.random() * 0.5) * Math.min(1, Math.abs(ship.speed));
+        const grad = ctx.createLinearGradient(-size * 0.6, 0, -size * 0.6 - flareLen, 0);
+        grad.addColorStop(0, 'rgba(255,205,110,0.9)');
+        grad.addColorStop(1, 'rgba(255,120,40,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.5, size * 0.26);
+        ctx.lineTo(-size * 0.5 - flareLen, 0);
+        ctx.lineTo(-size * 0.5, -size * 0.26);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(-size * 0.55, size * 0.62);
+    ctx.lineTo(-size * 0.32, 0);
+    ctx.lineTo(-size * 0.55, -size * 0.62);
+    ctx.closePath();
+    if (tier === 'high') {
+        const hullGrad = ctx.createLinearGradient(-size, 0, size, 0);
+        hullGrad.addColorStop(0, shadeColor(player.traitColor, -35));
+        hullGrad.addColorStop(1, player.traitColor);
+        ctx.fillStyle = hullGrad;
+    } else {
+        ctx.fillStyle = player.traitColor;
+    }
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    if (tier !== 'low') {
+        ctx.beginPath();
+        ctx.arc(size * 0.12, 0, size * 0.17, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fill();
+    }
+
+    if (tier === 'high' && Math.sin(Date.now() / 420 + ship.x * 0.7) > 0.35) {
+        ctx.beginPath(); ctx.arc(-size * 0.55, size * 0.62, Math.max(0.5, size * 0.1), 0, Math.PI * 2);
+        ctx.fillStyle = '#ff3355'; ctx.fill();
+        ctx.beginPath(); ctx.arc(-size * 0.55, -size * 0.62, Math.max(0.5, size * 0.1), 0, Math.PI * 2);
+        ctx.fillStyle = '#3dff6a'; ctx.fill();
+    }
+    ctx.restore();
+
+    if (tier === 'high' && ship.lastHit && Date.now() - ship.lastHit < 140) {
+        ctx.beginPath();
+        ctx.arc(ship.x, ship.y, size * 1.4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    if (isLead && tier !== 'low') {
+        const barW = size * 2.7;
+        const barY = ship.y - size - 5;
+        const pct = clamp(ship.hp / (ship.maxHp || ship.hp || 1), 0, 1);
+        ctx.fillStyle = 'rgba(4,6,16,0.6)';
+        ctx.fillRect(ship.x - barW / 2 - 0.5, barY - 0.5, barW + 1, 2.6);
+        ctx.fillStyle = pct > 0.5 ? '#3de8a5' : pct > 0.25 ? '#ffb545' : '#ff4d6d';
+        ctx.fillRect(ship.x - barW / 2, barY, barW * pct, 1.6);
+    }
+
+    if (isLead && isPlayer && !player.isBot) {
+        const bob = Math.sin(Date.now() / 300) * 1.6;
+        const markerY = ship.y - size - 15 + bob;
+        ctx.beginPath();
+        ctx.moveTo(ship.x, markerY + 6);
+        ctx.lineTo(ship.x - 4, markerY);
+        ctx.lineTo(ship.x + 4, markerY);
+        ctx.closePath();
+        ctx.fillStyle = '#ffe27a';
+        if (tier === 'high') { ctx.shadowColor = '#ffe27a'; ctx.shadowBlur = 6; }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        if (tier !== 'low') {
+            ctx.fillStyle = '#ffe27a';
+            ctx.font = 'bold 8px Orbitron, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('YOU', ship.x, markerY - 3);
+        }
+    }
+}
+
+function drawBullets(player) {
+    const tier = perfTier();
+    player.bullets.forEach(b => {
+        if (tier === 'high') { ctx.save(); ctx.shadowColor = player.traitColor; ctx.shadowBlur = 6; }
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
+        ctx.fillStyle = player.traitColor;
+        ctx.fill();
+        if (tier !== 'low') {
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+        }
+        if (tier === 'high') ctx.restore();
+    });
+}
+
+function showDamage(x, y, damage, color, crit) {
+    const offsetX = (Math.random() - 0.5) * 15;
+    const offsetY = (Math.random() - 0.5) * 15;
+    damageDisplays.push({ x: x + offsetX, y: y + offsetY - 5, damage, color, crit: !!crit, time: Date.now() });
+}
+function showFormation(x, y, formationId, color) {
+    formationDisplays.push({ x, y, label: formationLabel(formationId), color, time: Date.now() });
+}
+function showPowerUp(x, y, count, color) {
+    powerUpDisplays.push({ x, y, text: '+' + count + ' Units', color, time: Date.now() });
+}
+function pushChat(entry) {
+    chatLog.push(entry);
+    if (chatLog.length > CHAT_LOG_MAX) chatLog.splice(0, chatLog.length - CHAT_LOG_MAX);
+    renderChatLog();
+}
+function pushSystemChat(text) { pushChat({ kind: 'system', text, time: Date.now() }); }
+function pushBotChat(player, text) { pushChat({ kind: 'chat', name: player.name, color: player.traitColor, text, time: Date.now() }); }
+function renderChatLog() {
+    if (!chatLogEl) return;
+    chatLogEl.innerHTML = chatLog.map(e => {
+        if (e.kind === 'system') return '<div class="chat-line chat-system">' + e.text + '</div>';
+        return '<div class="chat-line"><span class="chat-name" style="color:' + e.color + '">' + e.name + '</span> ' + e.text + '</div>';
+    }).join('');
+    chatLogEl.scrollTop = chatLogEl.scrollHeight;
+}
+function showBotMessage(player, type, targetPlayer) {
+    if (Date.now() - player.lastMessageTime < 2600 || !player.ships[0]) return;
+    const persona = BOT_PERSONAS[player.style];
+    const lines = persona && persona.chat[type];
+    if (!lines || !lines.length) return;
+    let text = lines[Math.floor(Math.random() * lines.length)];
+    text = text.split('{name}').join(player.name);
+    text = text.split('{target}').join(targetPlayer && targetPlayer.name ? targetPlayer.name : 'them');
+    pushBotChat(player, text);
+    player.lastMessageTime = Date.now();
+}
+
+function drawDamageFormationPowerUp() {
+    const now = Date.now();
+    for (let i = damageDisplays.length - 1; i >= 0; i--) {
+        const d = damageDisplays[i];
+        if (now - d.time > 600) { damageDisplays.splice(i, 1); continue; }
+        ctx.fillStyle = d.crit ? '#ffd76a' : d.color;
+        ctx.font = (d.crit ? 'bold ' : '') + (modules.smallMode ? '7px' : '9px') + ' Rajdhani, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText((d.crit ? 'CRIT -' : '-') + d.damage, d.x, d.y - (now - d.time) * 0.02);
+    }
+    for (let i = formationDisplays.length - 1; i >= 0; i--) {
+        const f = formationDisplays[i];
+        if (now - f.time > 1800) { formationDisplays.splice(i, 1); continue; }
+        ctx.fillStyle = f.color;
+        ctx.font = (modules.smallMode ? '9px' : '11px') + ' Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = clamp(1 - (now - f.time) / 1800, 0, 1);
+        ctx.fillText(f.label, f.x, f.y - 12);
+        ctx.globalAlpha = 1;
+    }
+    for (let i = powerUpDisplays.length - 1; i >= 0; i--) {
+        const p = powerUpDisplays[i];
+        if (now - p.time > 1400) { powerUpDisplays.splice(i, 1); continue; }
+        ctx.fillStyle = p.color;
+        ctx.font = (modules.smallMode ? '9px' : '11px') + ' Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.text, p.x, p.y - 10 - (now - p.time) * 0.02);
+    }
+}
+
+function getTotalHP(player) { return player.ships.reduce((sum, s) => sum + s.hp, 0); }
+function getMaxHPPool(player) { return player.ships.reduce((sum, s) => sum + (s.maxHp || s.hp), 0); }
+function isLowHealth(player, threshold) {
+    const totalHP = getTotalHP(player);
+    const maxHP = getMaxHPPool(player);
+    return maxHP > 0 && totalHP / maxHP < (threshold !== undefined ? threshold : 0.35);
+}
+function findNearestEnemy(player) {
+    let nearest = null, minDist = Infinity;
+    players.forEach(p => {
+        if (p !== player && p.alive && p.ships.length > 0) {
+            const dist = Math.hypot(p.ships[0].x - player.ships[0].x, p.ships[0].y - player.ships[0].y);
+            if (dist < minDist) { minDist = dist; nearest = p; }
+        }
+    });
+    return { player: nearest, distance: minDist };
+}
+function findNearestPowerUp(player) {
+    let nearest = null, minDist = Infinity;
+    powerUps.forEach(pu => {
+        const dist = Math.hypot(pu.x - player.ships[0].x, pu.y - player.ships[0].y);
+        if (dist < minDist) { minDist = dist; nearest = pu; }
+    });
+    return { powerUp: nearest, distance: minDist };
+}
+function predictPosition(shooterShip, target, bulletSpeed) {
+    if (!target || !target.ships || !target.ships[0]) return { x: canvas.width / 2, y: canvas.height / 2 };
+    const t = target.ships[0];
+    const dist = Math.hypot(t.x - shooterShip.x, t.y - shooterShip.y);
+    const timeToImpact = dist / bulletSpeed;
+    return { x: t.x + t.dx * timeToImpact, y: t.y + t.dy * timeToImpact };
+}
+
+const ASTEROID_PALETTES = [
+    { base: '#7a7a82', dark: '#3a3a42', flat: '#4d4d4d' },
+    { base: '#8a6a52', dark: '#3f2f22', flat: '#5c4632' },
+    { base: '#6d90a8', dark: '#2a3f4c', flat: '#3f5d70' }
+];
+
+function drawObstacles() {
+    obstacles.forEach(o => {
+        const g = ctx.createLinearGradient(o.x, o.y, o.x, o.y + o.h);
+        g.addColorStop(0, '#242b52');
+        g.addColorStop(1, '#131730');
+        ctx.fillStyle = g;
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+        ctx.strokeStyle = 'rgba(47,224,255,0.55)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(o.x, o.y, o.w, o.h);
+        ctx.fillStyle = 'rgba(154,107,255,0.75)';
+        const r = Math.max(0.6, o.w * 0.06);
+        [[o.x + 1.5, o.y + 1.5], [o.x + o.w - 1.5, o.y + 1.5], [o.x + 1.5, o.y + o.h - 1.5], [o.x + o.w - 1.5, o.y + o.h - 1.5]].forEach(c => {
+            ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, Math.PI * 2); ctx.fill();
+        });
+    });
+}
+
+function spawnStars() {
+    stars.length = 0;
+    const count = modules.chromebookMode ? 220 : 420;
+    for (let i = 0; i < count; i++) {
+        stars.push({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            size: modules.smallMode ? rand(0.05, 0.27) : rand(0.12, 0.62),
+            brightness: Math.random(), twinkleSpeed: rand(0.01, 0.04), phase: Math.random() * Math.PI * 2,
+            dx: rand(-0.05, 0.05), dy: rand(-0.05, 0.05)
+        });
+    }
+}
+function drawStars() {
+    stars.forEach(s => {
+        s.phase += s.twinkleSpeed;
+        s.x += s.dx; s.y += s.dy;
+        if (s.x < 0) s.x += canvas.width; if (s.x > canvas.width) s.x -= canvas.width;
+        if (s.y < 0) s.y += canvas.height; if (s.y > canvas.height) s.y -= canvas.height;
+        const b = s.brightness * (0.62 + 0.38 * Math.sin(s.phase));
+        ctx.fillStyle = 'rgba(255,255,255,' + b + ')';
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fill();
+    });
+}
+
+function spawnNebula() {
+    nebula.length = 0;
+    const count = modules.chromebookMode ? 10 : 22;
+    for (let i = 0; i < count; i++) {
+        nebula.push({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            size: modules.smallMode ? rand(10, 30) : rand(22, 60),
+            hue: Math.random(), dx: rand(-0.03, 0.03), dy: rand(-0.03, 0.03)
+        });
+    }
+}
+function drawNebula() {
+    nebula.forEach(n => {
+        n.x += n.dx; n.y += n.dy;
+        if (n.x < -n.size) n.x = canvas.width + n.size; if (n.x > canvas.width + n.size) n.x = -n.size;
+        if (n.y < -n.size) n.y = canvas.height + n.size; if (n.y > canvas.height + n.size) n.y = -n.size;
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.size);
+        grad.addColorStop(0, n.hue < 0.5 ? 'rgba(120,80,220,0.14)' : 'rgba(40,170,220,0.13)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.size, 0, Math.PI * 2); ctx.fill();
+    });
+}
+
+function spawnGravityWells() {
+    gravityWells.length = 0;
+    for (let i = 0; i < 3; i++) gravityWells.push({ x: rand(50, canvas.width - 50), y: rand(50, canvas.height - 50), strength: 100, spin: 0 });
+}
+function drawGravityWells() {
+    gravityWells.forEach(w => {
+        w.spin += 0.03;
+        const grad = ctx.createRadialGradient(w.x, w.y, 0, w.x, w.y, 50);
+        grad.addColorStop(0, 'rgba(154,107,255,0.55)');
+        grad.addColorStop(0.5, 'rgba(120,60,220,0.18)');
+        grad.addColorStop(1, 'rgba(255,0,255,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(w.x, w.y, 50, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(200,150,255,0.5)';
+        ctx.lineWidth = 1;
+        for (let arm = 0; arm < 2; arm++) {
+            ctx.beginPath();
+            for (let t = 0; t <= 1; t += 0.05) {
+                const ang = w.spin + arm * Math.PI + t * Math.PI * 3;
+                const r = t * 42;
+                const px = w.x + Math.cos(ang) * r, py = w.y + Math.sin(ang) * r;
+                if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        }
+    });
+}
+
+function drawRadar() {
+    if (!radarCtx || !canvas.width) return;
+    const w = radarCanvas.width, h = radarCanvas.height;
+    radarCtx.clearRect(0, 0, w, h);
+    radarCtx.save();
+    radarCtx.beginPath(); radarCtx.arc(w / 2, h / 2, w / 2 - 1, 0, Math.PI * 2); radarCtx.clip();
+    radarCtx.fillStyle = 'rgba(6,10,26,0.92)';
+    radarCtx.fillRect(0, 0, w, h);
+    radarCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+    radarCtx.beginPath(); radarCtx.moveTo(w / 2, 0); radarCtx.lineTo(w / 2, h); radarCtx.moveTo(0, h / 2); radarCtx.lineTo(w, h / 2); radarCtx.stroke();
+
+    const sx = w / canvas.width, sy = h / canvas.height;
+    radarCtx.fillStyle = 'rgba(160,160,170,0.65)';
+    asteroids.forEach(a => { radarCtx.beginPath(); radarCtx.arc(a.x * sx, a.y * sy, 1.3, 0, Math.PI * 2); radarCtx.fill(); });
+
+    if (modules.gravityWells) {
+        radarCtx.fillStyle = 'rgba(200,140,255,0.6)';
+        gravityWells.forEach(gwl => { radarCtx.beginPath(); radarCtx.arc(gwl.x * sx, gwl.y * sy, 2.1, 0, Math.PI * 2); radarCtx.fill(); });
+    }
+    radarCtx.fillStyle = '#4de8c9';
+    powerUps.forEach(p => { radarCtx.beginPath(); radarCtx.arc(p.x * sx, p.y * sy, 1.5, 0, Math.PI * 2); radarCtx.fill(); });
+
+    players.forEach(p => {
+        if (!p.alive || !p.ships.length) return;
+        if (modules.stealthMode && Date.now() - p.lastShot > 2000) return;
+        const s = p.ships[0];
+        radarCtx.fillStyle = p.traitColor;
+        const r = Math.min(3.4, 1.6 + p.ships.length * 0.02);
+        radarCtx.beginPath(); radarCtx.arc(s.x * sx, s.y * sy, r, 0, Math.PI * 2); radarCtx.fill();
+    });
+    radarCtx.strokeStyle = 'rgba(47,224,255,0.4)';
+    radarCtx.lineWidth = 1.5;
+    radarCtx.beginPath(); radarCtx.arc(w / 2, h / 2, w / 2 - 1, 0, Math.PI * 2); radarCtx.stroke();
+    radarCtx.restore();
+}
+
+/* ---------------------- 8. Player / bot update logic ---------------------- */
+function updatePlayer(player, index, isMenuBot, deltaTime) {
+    if (!player.alive || !player.ships.length) return;
+    if (!isMenuBot && gameState !== 'playing') return;
+    const leadShip = player.ships[0];
+    const { up, down, left, right, form, dash } = player.keys;
+
+    if (!player.isBot) {
+        if (keys[up]) leadShip.speed = Math.min(leadShip.speed + PLAYER_SPEED.acceleration, PLAYER_SPEED.max);
+        else if (keys[down]) leadShip.speed = Math.max(leadShip.speed - PLAYER_SPEED.acceleration, PLAYER_SPEED.min);
+        else if (!modules.driftMode && Date.now() > player.dashEnd) leadShip.speed *= PLAYER_SPEED.deceleration;
+        if (keys[left]) leadShip.angle -= 0.15 * deltaTime * 60;
+        if (keys[right]) leadShip.angle += 0.15 * deltaTime * 60;
+        if (keys[form]) {
+            keys[form] = false;
+            player.formation = getNextFormation(player.formation);
+            showFormation(leadShip.x, leadShip.y, player.formation, '#fff');
+        }
+        if (keys[dash] && Date.now() - player.lastDash > 1800) {
+            player.dashSpeed = leadShip.speed + 4.5;
+            player.dashEnd = Date.now() + 250;
+            player.lastDash = Date.now();
+            if (modules.overdrive) leadShip.shieldUntil = Date.now() + 1000;
+            playDash();
+        }
+        if (shotReady(player, 120 * (1 + player.ships.length * 0.015))) {
+            const bulletSpeed = 2.5;
+            player.ships.forEach(ship => {
+                const shootAngle = ship.angle;
+                player.bullets.push({
+                    x: ship.x + Math.cos(shootAngle) * 3, y: ship.y + Math.sin(shootAngle) * 3,
+                    dx: Math.cos(shootAngle) * bulletSpeed, dy: Math.sin(shootAngle) * bulletSpeed,
+                    color: player.traitColor, size: modules.smallMode ? 1 : 2,
+                    time: Date.now(), shooter: player, bounces: 0
+                });
+            });
+            registerShot(player, 120 * (1 + player.ships.length * 0.015));
+            playLaser();
+        }
+    } else {
+        const difficultySettings = {
+            novice: { turnSpeed: 0.05, aimError: 0.22, reactionTime: 450, awarenessRange: 260, shootRange: 220, dashFreq: 0.08, shootFreq: 220 },
+            standard: { turnSpeed: 0.10, aimError: 0.12, reactionTime: 260, awarenessRange: 340, shootRange: 300, dashFreq: 0.18, shootFreq: 190 },
+            elite: { turnSpeed: 0.16, aimError: 0.06, reactionTime: 150, awarenessRange: 420, shootRange: 380, dashFreq: 0.30, shootFreq: 150 },
+            Deity: { turnSpeed: 0.28, aimError: 0.01, reactionTime: 40, awarenessRange: 620, shootRange: 460, dashFreq: 0.55, shootFreq: 90 }
+        };
+        const settings = difficultySettings[player.difficulty] || difficultySettings.standard;
+        const styleParams = {
+            aggressive: { chaseRange: 450, retreatThreshold: 0.25, speedBoost: 1.8 },
+            defensive: { chaseRange: 350, retreatThreshold: 0.45, speedBoost: 1.4 },
+            dashy: { chaseRange: 500, retreatThreshold: 0.3, speedBoost: 2.0 },
+            formation: { chaseRange: 400, retreatThreshold: 0.35, speedBoost: 1.6 }
+        };
+        const style = styleParams[player.style];
+
+        if (Date.now() - player.lastDecision > settings.reactionTime) {
+            const { player: nearestEnemy, distance: enemyDist } = findNearestEnemy(player);
+            const { powerUp: nearestPowerUp, distance: powerUpDist } = findNearestPowerUp(player);
+            const isThreatened = players.some(p => p !== player && p.bullets.some(b => Math.hypot(b.x - leadShip.x, b.y - leadShip.y) < 60));
+            const lowHealth = isLowHealth(player, style.retreatThreshold);
+            const highHealth = getTotalHP(player) / getMaxHPPool(player) > 0.75;
+
+            if (lowHealth) { player.botState = 'retreating'; showBotMessage(player, 'lowHP'); }
+            else if (isThreatened) { player.botState = 'evading'; showBotMessage(player, 'evading'); }
+            else if (nearestPowerUp && powerUpDist < settings.awarenessRange && player.ships.length < MAX_SHIPS_PER_PLAYER / 2) {
+                player.botState = 'powerUpChase'; player.target = nearestPowerUp; showBotMessage(player, 'powerUp');
+            } else if (nearestEnemy && enemyDist < style.chaseRange) {
+                player.botState = (highHealth && player.difficulty === 'Deity') ? 'aggressiveChase' : 'chasing';
+                player.target = nearestEnemy; showBotMessage(player, 'chasing', nearestEnemy);
+            } else {
+                player.botState = 'patrolling'; player.target = null;
+                if (Math.random() < 0.3) showBotMessage(player, 'patrol');
+            }
+            player.lastDecision = Date.now();
+        }
+
+        let targetX, targetY;
+        if ((player.botState === 'chasing' || player.botState === 'aggressiveChase') && player.target && player.target.ships && player.target.ships.length > 0) {
+            const predicted = predictPosition(leadShip, player.target, 2.5);
+            targetX = predicted.x; targetY = predicted.y;
+        } else if (player.botState === 'powerUpChase' && player.target) {
+            targetX = player.target.x; targetY = player.target.y;
+        } else if (player.botState === 'retreating') {
+            targetX = canvas.width / 2 + (Math.random() - 0.5) * 400;
+            targetY = canvas.height / 2 + (Math.random() - 0.5) * 400;
+        } else if (player.botState === 'evading') {
+            const threat = players.find(p => p !== player && p.bullets.some(b => Math.hypot(b.x - leadShip.x, b.y - leadShip.y) < 60));
+            if (threat && threat.ships && threat.ships.length > 0) {
+                const dx = leadShip.x - threat.ships[0].x, dy = leadShip.y - threat.ships[0].y;
+                targetX = leadShip.x + dx * 4; targetY = leadShip.y + dy * 4;
+            } else { targetX = leadShip.x; targetY = leadShip.y; }
+        } else {
+            if (!player.target || Math.hypot(leadShip.x - player.target.x, leadShip.y - player.target.y) < 30) {
+                targetX = Math.random() * (canvas.width - 100) + 50;
+                targetY = Math.random() * (canvas.height - 100) + 50;
+                player.target = { x: targetX, y: targetY };
+            } else { targetX = player.target.x; targetY = player.target.y; }
+        }
+
+        let avoidX = 0, avoidY = 0;
+        const borderMargin = 50, borderForce = 100;
+        if (!modules.infiniteArena) {
+            if (leadShip.x < borderMargin) avoidX += borderForce * (borderMargin - leadShip.x);
+            if (leadShip.x > canvas.width - borderMargin) avoidX -= borderForce * (leadShip.x - (canvas.width - borderMargin));
+            if (leadShip.y < borderMargin) avoidY += borderForce * (borderMargin - leadShip.y);
+            if (leadShip.y > canvas.height - borderMargin) avoidY -= borderForce * (leadShip.y - (canvas.height - borderMargin));
+        }
+        asteroids.forEach(a => {
+            const dist = Math.hypot(leadShip.x - a.x, leadShip.y - a.y);
+            if (dist < a.size + 50) {
+                const dx = leadShip.x - a.x, dy = leadShip.y - a.y;
+                const force = (50 - dist) / 50;
+                avoidX += dx * force * 0.1; avoidY += dy * force * 0.1;
+            }
+        });
+        players.forEach(p => {
+            if (p !== player && p.alive && p.ships.length > 0) {
+                const dist = Math.hypot(leadShip.x - p.ships[0].x, leadShip.y - p.ships[0].y);
+                if (dist < 50 && player.style !== 'formation') {
+                    const dx = leadShip.x - p.ships[0].x, dy = leadShip.y - p.ships[0].y;
+                    avoidX += dx * 0.05; avoidY += dy * 0.05;
+                }
+            }
+        });
+
+        targetX += avoidX; targetY += avoidY;
+        targetX = Math.max(50, Math.min(canvas.width - 50, targetX));
+        targetY = Math.max(50, Math.min(canvas.height - 50, targetY));
+
+        const desiredAngle = Math.atan2(targetY - leadShip.y, targetX - leadShip.x);
+        const angleDiff = (desiredAngle - leadShip.angle + Math.PI) % (2 * Math.PI) - Math.PI;
+        leadShip.angle += Math.max(-settings.turnSpeed, Math.min(settings.turnSpeed, angleDiff)) * deltaTime * 60;
+        leadShip.speed = Math.min(leadShip.speed + PLAYER_SPEED.acceleration, PLAYER_SPEED.max * style.speedBoost);
+
+        if (player.style === 'dashy' && Math.random() < settings.dashFreq && Date.now() - player.lastDash > 1800) {
+            player.dashSpeed = leadShip.speed + 4.5;
+            player.dashEnd = Date.now() + 250;
+            player.lastDash = Date.now();
+            if (modules.overdrive) leadShip.shieldUntil = Date.now() + 1000;
+            playDash();
+        }
+
+        if (shotReady(player, settings.shootFreq)) {
+            const distToTarget = player.target ? Math.hypot(targetX - leadShip.x, targetY - leadShip.y) : Infinity;
+            if ((player.botState === 'chasing' && distToTarget < settings.shootRange) ||
+                (player.botState === 'aggressiveChase' && distToTarget < settings.shootRange * 1.5) ||
+                (player.botState === 'evading' && distToTarget < 150) ||
+                (player.botState === 'retreating' && Math.random() < 0.5) ||
+                (player.botState === 'patrolling' && Math.random() < 0.2)) {
+                if (Math.abs(angleDiff) < (player.difficulty === 'Deity' ? 0.3 : 0.7)) {
+                    const bulletSpeed = player.difficulty === 'Deity' ? 3.5 : 2.5;
+                    const shootAngle = leadShip.angle + (Math.random() - 0.5) * settings.aimError;
+                    player.ships.forEach(ship => {
+                        player.bullets.push({
+                            x: ship.x + Math.cos(shootAngle) * 3, y: ship.y + Math.sin(shootAngle) * 3,
+                            dx: Math.cos(shootAngle) * bulletSpeed, dy: Math.sin(shootAngle) * bulletSpeed,
+                            color: player.traitColor, size: modules.smallMode ? 1 : 2,
+                            time: Date.now(), shooter: player, bounces: 0
+                        });
+                    });
+                    registerShot(player, settings.shootFreq);
+                    playLaser();
+                    if (Math.random() < 0.5 && (player.botState === 'chasing' || player.botState === 'aggressiveChase')) {
+                        showBotMessage(player, 'chasing', player.target);
+                    }
+                }
+            }
+        }
+    }
+
+    if (Date.now() <= player.dashEnd) {
+        leadShip.speed = player.dashSpeed;
+        particles.push({
+            x: leadShip.x - Math.cos(leadShip.angle) * 3, y: leadShip.y - Math.sin(leadShip.angle) * 3,
+            size: modules.smallMode ? 0.5 : 1, life: 25, color: '#ffcc00',
+            dx: -Math.cos(leadShip.angle) * 0.6, dy: -Math.sin(leadShip.angle) * 0.6
+        });
+        if (perfTier() !== 'low') {
+            particles.push({
+                x: leadShip.x - Math.cos(leadShip.angle) * 3 + (Math.random() - 0.5) * 3,
+                y: leadShip.y - Math.sin(leadShip.angle) * 3 + (Math.random() - 0.5) * 3,
+                size: modules.smallMode ? 0.3 : 0.6, life: 18, color: '#2fe0ff',
+                dx: -Math.cos(leadShip.angle) * 0.4 + (Math.random() - 0.5) * 0.3,
+                dy: -Math.sin(leadShip.angle) * 0.4 + (Math.random() - 0.5) * 0.3
+            });
+        }
+    } else if (player.dashSpeed > 0) {
+        player.dashSpeed *= 0.94;
+        leadShip.speed = Math.max(leadShip.speed * 0.94, player.dashSpeed);
+        if (player.dashSpeed < 0.05) player.dashSpeed = 0;
+    }
+
+    player.ships.forEach((ship, i) => {
+        let targetX, targetY, offsetX, offsetY;
+        if (i === 0) {
+            ship.dx = Math.cos(ship.angle) * ship.speed * 1.8 * deltaTime * 60;
+            ship.dy = Math.sin(ship.angle) * ship.speed * 1.8 * deltaTime * 60;
+        } else {
+            const formations = modules.romansExpansion ? {
+                romansRectangle: () => {
+                    const perimeter = player.ships.length * 6;
+                    const width = Math.ceil(Math.sqrt(perimeter / 2));
+                    const height = Math.ceil(perimeter / (2 * width));
+                    const side = Math.floor(i / (player.ships.length / 4));
+                    const pos = i % (player.ships.length / 4);
+                    if (side === 0) { offsetX = pos * 6 - width * 3; offsetY = -height * 3; ship.angle = Math.PI / 2; }
+                    else if (side === 1) { offsetX = width * 3; offsetY = pos * 6 - height * 3; ship.angle = 0; }
+                    else if (side === 2) { offsetX = pos * 6 - width * 3; offsetY = height * 3; ship.angle = -Math.PI / 2; }
+                    else { offsetX = -width * 3; offsetY = pos * 6 - height * 3; ship.angle = Math.PI; }
+                },
+                romansCircle: () => {
+                    const angle = (i / player.ships.length) * Math.PI * 2;
+                    offsetX = Math.cos(angle) * 12; offsetY = Math.sin(angle) * 12;
+                    ship.angle = angle + Math.PI / 2;
+                },
+                romansDisguise: () => { offsetX = 0; offsetY = 0; ship.angle = leadShip.angle; },
+                romansTrap: () => {
+                    const angle = (i / player.ships.length) * Math.PI * 2;
+                    offsetX = Math.cos(angle) * 12; offsetY = Math.sin(angle) * 12;
+                    ship.angle = angle - Math.PI / 2;
+                },
+                romansTrinityH: () => {
+                    const third = Math.max(1, Math.floor(player.ships.length / 3));
+                    const line = Math.floor(i / third);
+                    offsetX = (i % third - third / 2) * 6; offsetY = (line - 1) * 12;
+                    ship.angle = -Math.PI / 2;
+                },
+                romansTrinityV: () => {
+                    const third = Math.max(1, Math.floor(player.ships.length / 3));
+                    const line = Math.floor(i / third);
+                    offsetX = (line - 1) * 12; offsetY = (i % third - third / 2) * 6;
+                    ship.angle = -Math.PI / 2;
+                }
+            } : {
+                diamond: () => { offsetX = (i % 2 === 0 ? 1 : -1) * Math.ceil(i / 2) * 3; offsetY = i * 3; },
+                compact: () => { const angle = (i / Math.min(player.ships.length, MAX_SHIPS_PER_PLAYER)) * Math.PI * 2; offsetX = Math.cos(angle) * 4; offsetY = Math.sin(angle) * 4; },
+                swarm: () => { const angle = (i / Math.min(player.ships.length, MAX_SHIPS_PER_PLAYER)) * Math.PI * 2; offsetX = Math.cos(angle) * 9; offsetY = Math.sin(angle) * 9; },
+                'line-h': () => { const half = Math.floor(player.ships.length / 2); offsetX = (i - half) * 6; offsetY = 0; },
+                'line-v': () => { const half = Math.floor(player.ships.length / 2); offsetX = 0; offsetY = (i - half) * 6; },
+                spiral: () => { const radius = Math.min(12, i * 1.2); const angle = i * 0.9; offsetX = Math.cos(angle) * radius; offsetY = Math.sin(angle) * radius; }
+            };
+            (formations[player.formation] || formations.spiral)();
+            const noiseX = (Math.random() - 0.5) * 2.5, noiseY = (Math.random() - 0.5) * 2.5;
+            targetX = leadShip.x - Math.cos(leadShip.angle) * (offsetY + noiseY) - Math.sin(leadShip.angle) * (offsetX + noiseX);
+            targetY = leadShip.y - Math.sin(leadShip.angle) * (offsetY + noiseY) + Math.cos(leadShip.angle) * (offsetX + noiseX);
+            ship.dx = (targetX - ship.x) * 0.25 * 1.8 * deltaTime * 60;
+            ship.dy = (targetY - ship.y) * 0.25 * 1.8 * deltaTime * 60;
+            if (!modules.romansExpansion || player.formation === 'romansDisguise') ship.angle = leadShip.angle;
+        }
+
+        if (modules.gravityWells) {
+            gravityWells.forEach(w => {
+                const dist = Math.hypot(ship.x - w.x, ship.y - w.y);
+                if (dist > 20) {
+                    const force = 100 / (dist * dist);
+                    ship.dx += (w.x - ship.x) * force * deltaTime * 60;
+                    ship.dy += (w.y - ship.y) * force * deltaTime * 60;
+                }
+            });
+        }
+
+        ship.dx *= Math.pow(0.97, deltaTime * 60);
+        ship.dy *= Math.pow(0.97, deltaTime * 60);
+        ship.x += ship.dx; ship.y += ship.dy;
+
+        if (modules.infiniteArena) {
+            ship.x = (ship.x + canvas.width) % canvas.width;
+            ship.y = (ship.y + canvas.height) % canvas.height;
+        } else {
+            ship.x = Math.max(2, Math.min(canvas.width - 2, ship.x));
+            ship.y = Math.max(2, Math.min(canvas.height - 2, ship.y));
+        }
+
+        if (modules.separation && player.quarter !== null && player.quarter !== undefined) {
+            const aliveInQuarter = players.filter(p => p.alive && p.ships.length > 0 && p.quarter === player.quarter).length;
+            const midX = canvas.width / 2, midY = canvas.height / 2;
+            if (aliveInQuarter > 1) {
+                if (player.quarter === 0) { ship.x = Math.min(midX, ship.x); ship.y = Math.min(midY, ship.y); }
+                else if (player.quarter === 1) { ship.x = Math.max(midX, ship.x); ship.y = Math.min(midY, ship.y); }
+                else if (player.quarter === 2) { ship.x = Math.min(midX, ship.x); ship.y = Math.max(midY, ship.y); }
+                else { ship.x = Math.max(midX, ship.x); ship.y = Math.max(midY, ship.y); }
+            } else if (aliveInQuarter === 1) {
+                if (player.quarter % 2 === 0) ship.x = Math.min(midX, ship.x); else ship.x = Math.max(midX, ship.x);
+            }
+        }
+
+        if (!modules.chromebookMode || Math.random() < 0.5) {
+            particles.push({ x: ship.x - Math.cos(ship.angle) * 1.5, y: ship.y - Math.sin(ship.angle) * 1.5, size: modules.smallMode ? 0.1 : 0.2, life: 10, color: player.traitColor });
+        }
+    });
+
+    player.bullets.forEach(b => {
+        if (modules.homingShots) {
+            let nearestShip = null, nearestDist = 260;
+            players.forEach(op => {
+                if (op === player || !op.alive) return;
+                op.ships.forEach(os => {
+                    const d = Math.hypot(os.x - b.x, os.y - b.y);
+                    if (d < nearestDist) { nearestDist = d; nearestShip = os; }
+                });
+            });
+            if (nearestShip) {
+                const desiredAngle = Math.atan2(nearestShip.y - b.y, nearestShip.x - b.x);
+                const curAngle = Math.atan2(b.dy, b.dx);
+                const diff = (desiredAngle - curAngle + Math.PI) % (Math.PI * 2) - Math.PI;
+                const turn = Math.max(-0.06, Math.min(0.06, diff)) * deltaTime * 60;
+                const speed = Math.hypot(b.dx, b.dy);
+                const newAngle = curAngle + turn;
+                b.dx = Math.cos(newAngle) * speed;
+                b.dy = Math.sin(newAngle) * speed;
+            }
+        }
+        if (modules.gravityWells) {
+            gravityWells.forEach(w => {
+                const dist = Math.hypot(b.x - w.x, b.y - w.y);
+                if (dist > 10) {
+                    const force = 50 / (dist * dist);
+                    b.dx += (w.x - b.x) * force * deltaTime * 60;
+                    b.dy += (w.y - b.y) * force * deltaTime * 60;
+                }
+            });
+        }
+        b.x += b.dx * 1.8 * deltaTime * 60;
+        b.y += b.dy * 1.8 * deltaTime * 60;
+        if (modules.infiniteArena) {
+            b.x = (b.x + canvas.width) % canvas.width;
+            b.y = (b.y + canvas.height) % canvas.height;
+        } else if (modules.ricochetRounds) {
+            if (b.x < 0) { b.x = 0; b.dx *= -1; b.bounces++; playRicochet(); }
+            else if (b.x > canvas.width) { b.x = canvas.width; b.dx *= -1; b.bounces++; playRicochet(); }
+            if (b.y < 0) { b.y = 0; b.dy *= -1; b.bounces++; playRicochet(); }
+            else if (b.y > canvas.height) { b.y = canvas.height; b.dy *= -1; b.bounces++; playRicochet(); }
+        }
+        if (!modules.chromebookMode || Math.random() < 0.5) {
+            particles.push({ x: b.x - b.dx, y: b.y - b.dy, size: modules.smallMode ? 0.1 : 0.2, life: 6, color: b.color });
+        }
+    });
+    player.bullets = player.bullets.filter(b => {
+        const outOfBounds = !modules.infiniteArena && !modules.ricochetRounds && (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height);
+        const expired = Date.now() - b.time > 1800;
+        const bounceCap = modules.ricochetRounds ? 6 : 2;
+        return !outOfBounds && !expired && b.bounces < bounceCap;
+    });
+
+    player.lastPos = { x: leadShip.x, y: leadShip.y };
+}
+
+function shotReady(player, baseInterval) {
+    const now = Date.now();
+    if (!modules.burstFire) return now - player.lastShot > baseInterval;
+    if (now < (player.burstCooldownUntil || 0)) return false;
+    return now - player.lastShot > (player.burstCount ? 90 : 0);
+}
+function registerShot(player, baseInterval) {
+    player.lastShot = Date.now();
+    if (!modules.burstFire) return;
+    player.burstCount = (player.burstCount || 0) + 1;
+    if (player.burstCount >= 3) {
+        player.burstCount = 0;
+        player.burstCooldownUntil = Date.now() + baseInterval * 3.2;
+    }
+}
+function spawnDebrisIfEnabled(x, y, size) {
+    if (!modules.debrisField) return;
+    debrisClouds.push({ x, y, radius: size * 1.9, life: 210, maxLife: 210 });
+}
+function updateDebris(deltaTime) {
+    for (let i = debrisClouds.length - 1; i >= 0; i--) {
+        const d = debrisClouds[i];
+        d.life -= deltaTime * 60;
+        if (d.life <= 0) { debrisClouds.splice(i, 1); continue; }
+        const alpha = Math.min(1, d.life / 50) * 0.3;
+        const grad = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.radius);
+        grad.addColorStop(0, 'rgba(150,130,95,' + alpha + ')');
+        grad.addColorStop(1, 'rgba(150,130,95,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2); ctx.fill();
+
+        players.forEach(p => {
+            if (!p.alive) return;
+            for (let si = p.ships.length - 1; si >= 0; si--) {
+                const s = p.ships[si];
+                if (Math.hypot(s.x - d.x, s.y - d.y) < d.radius) {
+                    if (!s.lastDebrisHit || Date.now() - s.lastDebrisHit > 400) {
+                        const dmg = Math.round(4 * damageMultiplier(s));
+                        s.hp -= dmg;
+                        s.lastHit = Date.now();
+                        s.lastDebrisHit = Date.now();
+                        if (s.hp <= 0) { p.ships.splice(si, 1); explosion(s.x, s.y, 30, p.traitColor); }
+                    }
+                }
+            }
+        });
+    }
+}
+function damageMultiplier(ship) {
+    return (modules.overdrive && ship.shieldUntil && Date.now() < ship.shieldUntil) ? 0.5 : 1;
+}
+
+function getNextFormation(current) {
+    const standardFormations = FORMATION_DEFS.standard.map(f => f.id);
+    const romanFormations = FORMATION_DEFS.roman.map(f => f.id);
+    const formations = modules.romansExpansion ? romanFormations : standardFormations;
+    const idx = formations.indexOf(current);
+    return formations[(idx + 1) % formations.length];
+}
+
+/* ---------------------- 9. World spawning & updates ---------------------- */
+function spawnAsteroids() {
+    let guard = 0;
+    while (asteroids.length < MAX_ASTEROIDS && guard < 4000) {
+        guard++;
+        let x, y, tooClose;
+        do {
+            x = Math.random() * canvas.width;
+            y = Math.random() * canvas.height;
+            tooClose = players.some(p => p.ships.some(s => Math.hypot(s.x - x, s.y - y) < ASTEROID_SPAWN_DISTANCE));
+        } while (tooClose && guard++ < 4000);
+        const sizeMult = modules.bigAsteroids ? 1.6 : 1;
+        const baseSize = modules.smallMode ? 4 + Math.random() * 6 : 8 + Math.random() * 12;
+        asteroids.push({
+            x, y, size: baseSize * sizeMult,
+            dx: (Math.random() - 0.5) * 1.2, dy: (Math.random() - 0.5) * 1.2,
+            angle: 0, spin: (Math.random() - 0.5) * 0.025,
+            hp: modules.bigAsteroids ? 1800 : 1200,
+            colorType: Math.floor(Math.random() * 3)
+        });
+    }
+}
+
+function updateAsteroids(deltaTime) {
+    asteroids.forEach(a => {
+        if (gameState === 'playing') {
+            a.x += a.dx * deltaTime * 60;
+            a.y += a.dy * deltaTime * 60;
+            a.dx = Math.max(-1.8, Math.min(1.8, a.dx));
+            a.dy = Math.max(-1.8, Math.min(1.8, a.dy));
+            if (modules.infiniteArena) {
+                a.x = (a.x + canvas.width) % canvas.width;
+                a.y = (a.y + canvas.height) % canvas.height;
+            } else {
+                if (a.x - a.size < 0 || a.x + a.size > canvas.width) a.dx *= -1;
+                if (a.y - a.size < 0 || a.y + a.size > canvas.height) a.dy *= -1;
+            }
+            obstacles.forEach(o => {
+                if (a.x + a.size > o.x && a.x - a.size < o.x + o.w && a.y + a.size > o.y && a.y - a.size < o.y + o.h) {
+                    const dx = a.x - (o.x + o.w / 2), dy = a.y - (o.y + o.h / 2);
+                    if (Math.abs(dx) > Math.abs(dy)) a.dx *= -1; else a.dy *= -1;
+                }
+            });
+        }
+        a.angle += a.spin * deltaTime * 60;
+        const tier = perfTier();
+        const palette = ASTEROID_PALETTES[a.colorType || 0];
+        if (tier === 'high') {
+            const grad = ctx.createRadialGradient(a.x - a.size * 0.3, a.y - a.size * 0.3, 0, a.x, a.y, a.size);
+            grad.addColorStop(0, palette.base); grad.addColorStop(1, palette.dark);
+            ctx.fillStyle = grad;
+        } else {
+            ctx.fillStyle = palette.flat;
+        }
+        ctx.beginPath();
+        for (let j = 0; j < 12; j++) {
+            const angle = a.angle + (Math.PI * 2 * j) / 12;
+            const r = a.size * (0.85 + Math.random() * 0.25);
+            ctx[j === 0 ? 'moveTo' : 'lineTo'](a.x + Math.cos(angle) * r, a.y + Math.sin(angle) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#999999';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        if (tier !== 'low') {
+            ctx.fillStyle = 'rgba(0,0,0,0.25)';
+            ctx.beginPath(); ctx.arc(a.x + a.size * 0.2, a.y - a.size * 0.15, a.size * 0.22, 0, Math.PI * 2); ctx.fill();
+        }
+    });
+}
+
+function spawnObstacles() {
+    for (let i = 0; i < 3; i++) {
+        let x, y, guard = 0;
+        do {
+            x = Math.random() * canvas.width;
+            y = Math.random() * canvas.height;
+            guard++;
+        } while (players.some(p => p.ships.some(s => Math.hypot(s.x - x, s.y - y) < 30)) && guard < 400);
+        obstacles.push({
+            x, y,
+            w: modules.smallMode ? 7.5 + Math.random() * 7.5 : 15 + Math.random() * 15,
+            h: modules.smallMode ? 7.5 + Math.random() * 7.5 : 15 + Math.random() * 15,
+            hp: 1500
+        });
+    }
+}
+
+function updateParticles(deltaTime) {
+    if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES);
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life -= deltaTime * 60;
+        if (p.dx) p.x += p.dx * deltaTime * 60;
+        if (p.dy) p.y += p.dy * deltaTime * 60;
+        p.dx = p.dx ? p.dx * Math.pow(0.94, deltaTime * 60) : 0;
+        p.dy = p.dy ? p.dy * Math.pow(0.94, deltaTime * 60) : 0;
+        if (modules.infiniteArena) {
+            p.x = (p.x + canvas.width) % canvas.width;
+            p.y = (p.y + canvas.height) % canvas.height;
+        }
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        ctx.fillStyle = 'rgba(' + parseInt(p.color.slice(1, 3), 16) + ',' + parseInt(p.color.slice(3, 5), 16) + ',' + parseInt(p.color.slice(5, 7), 16) + ',' + (p.life / 50) + ')';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function spawnPowerUps() {
+    const totalPlayers = players.filter(p => p.alive).length;
+    const baseProbability = modules.doublePowerUps ? 0.024 : 0.012;
+    const spawnProbability = baseProbability * (1 + (totalPlayers - 1) * 0.15);
+    if (Math.random() < spawnProbability) {
+        const roll = Math.random();
+        const type = roll < 0.2 ? '+2' : roll < 0.4 ? '+4' : roll < 0.6 ? '+6' : roll < 0.8 ? '+8' : '+10';
+        powerUps.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, type, pulse: 0, pulseDirection: 1 });
+    }
+}
+
+function updatePowerUps() {
+    for (let i = powerUps.length - 1; i >= 0; i--) {
+        const pu = powerUps[i];
+        pu.pulse += pu.pulseDirection * 0.12;
+        if (pu.pulse >= 1) pu.pulseDirection = -1;
+        if (pu.pulse <= 0) pu.pulseDirection = 1;
+        const value = parseInt(pu.type.slice(1), 10) || 2;
+        const baseRadius = (modules.smallMode ? 5 : 8.5) + value * 0.55;
+        const radius = baseRadius + pu.pulse * 4;
+
+        if (modules.magnetPowerups) {
+            let nearestShip = null, nearestDist = 160;
+            players.forEach(p => {
+                if (!p.alive) return;
+                p.ships.forEach(s => {
+                    const d = Math.hypot(s.x - pu.x, s.y - pu.y);
+                    if (d < nearestDist) { nearestDist = d; nearestShip = s; }
+                });
+            });
+            if (nearestShip) {
+                const pull = 1.1 * (1 - nearestDist / 160);
+                const ang = Math.atan2(nearestShip.y - pu.y, nearestShip.x - pu.x);
+                pu.x += Math.cos(ang) * pull;
+                pu.y += Math.sin(ang) * pull;
+            }
+        }
+
+        ctx.fillStyle = 'rgba(0, 255, 204, 0.3)';
+        ctx.beginPath(); ctx.arc(pu.x, pu.y, radius + 6, 0, Math.PI * 2); ctx.fill();
+        const gradient = ctx.createRadialGradient(pu.x, pu.y, 0, pu.x, pu.y, radius);
+        gradient.addColorStop(0, '#00ffcc'); gradient.addColorStop(1, '#0066ff');
+        ctx.fillStyle = gradient;
+        ctx.beginPath(); ctx.arc(pu.x, pu.y, radius, 0, Math.PI * 2); ctx.fill();
+
+        if (perfTier() !== 'low') {
+            ctx.save();
+            ctx.translate(pu.x, pu.y);
+            ctx.rotate((Date.now() / 1400) % (Math.PI * 2));
+            ctx.strokeStyle = 'rgba(0,255,204,0.55)';
+            ctx.lineWidth = 1;
+            const sides = 3 + Math.min(3, Math.floor(value / 4));
+            ctx.beginPath();
+            for (let k = 0; k < sides; k++) {
+                const ang = (k / sides) * Math.PI * 2;
+                const px = Math.cos(ang) * (radius + 8), py = Math.sin(ang) * (radius + 8);
+                if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        if ((!modules.chromebookMode || Math.random() < 0.5) && Math.random() < 0.4) {
+            particles.push({
+                x: pu.x + (Math.random() - 0.5) * radius * 2, y: pu.y + (Math.random() - 0.5) * radius * 2,
+                size: modules.smallMode ? 0.6 : 1.2, life: 25, color: '#00ffcc',
+                dx: (Math.random() - 0.5) * 1.2, dy: (Math.random() - 0.5) * 1.2
+            });
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = (modules.smallMode ? '8px' : '10px') + ' Orbitron, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(pu.type, pu.x, pu.y + 3);
+
+        let consumed = false;
+        for (let pj = 0; pj < players.length && !consumed; pj++) {
+            const p = players[pj];
+            for (let sj = 0; sj < p.ships.length && !consumed; sj++) {
+                const s = p.ships[sj];
+                if (Math.hypot(s.x - pu.x, s.y - pu.y) < radius + 6 && p.ships.length < MAX_SHIPS_PER_PLAYER) {
+                    const count = Math.min(parseInt(pu.type.slice(1)), MAX_SHIPS_PER_PLAYER - p.ships.length);
+                    for (let k = 0; k < count; k++) p.ships.push(makeShip(s.x, s.y, s.angle, 'small'));
+                    showPowerUp(pu.x, pu.y, count, '#00ffcc');
+                    if (p.isBot) showBotMessage(p, 'powerUp');
+                    powerUps.splice(i, 1);
+                    playPowerUp(count);
+                    consumed = true;
+                }
+            }
+        }
+    }
+}
+
+function explosion(x, y, count, baseColor, size, isFinal) {
+    baseColor = baseColor || '#ffcc00';
+    size = size || 1.5;
+    const colors = ['#ffffff', '#ffffcc', baseColor];
+    for (let i = 0; i < Math.min(count * 1.5, MAX_PARTICLES - particles.length); i++) {
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const particleSize = (modules.smallMode ? size / 2 : size) + Math.random() * 0.5;
+        particles.push({ x, y, size: particleSize, life: 20, color, dx: (Math.random() - 0.5) * 10, dy: (Math.random() - 0.5) * 10 });
+    }
+    if (isFinal) {
+        for (let i = 0; i < Math.min(count, MAX_PARTICLES - particles.length); i++) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particles.push({ x, y, size: (modules.smallMode ? 0.5 : 1) + Math.random() * 0.5, life: 25, color, dx: (Math.random() - 0.5) * 12, dy: (Math.random() - 0.5) * 12 });
+        }
+        // shockwave ring
+        particles.push({ x, y, size: 1, life: 22, color: '#ffffff', dx: 0, dy: 0, ring: true, ringMax: modules.smallMode ? 30 : 55 });
+        playExplosion(count);
+    } else {
+        playExplosion(count);
+    }
+}
+
+function drawShockwaves() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        if (!p.ring) continue;
+        const t = 1 - Math.max(0, p.life) / 22;
+        const r = t * p.ringMax;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.5 * (1 - t)) + ')';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+
+function triggerChaosEvent() {
+    const events = [
+        () => {
+            const sizeMult = modules.bigAsteroids ? 1.6 : 1;
+            for (let i = 0; i < 10; i++) {
+                asteroids.push({
+                    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                    size: (modules.smallMode ? 4 + Math.random() * 4 : 8 + Math.random() * 8) * sizeMult,
+                    dx: (Math.random() - 0.5) * 2, dy: (Math.random() - 0.5) * 2,
+                    angle: 0, spin: (Math.random() - 0.5) * 0.03,
+                    hp: modules.bigAsteroids ? 1200 : 800,
+                    colorType: Math.floor(Math.random() * 3)
+                });
+            }
+            playExplosion(40);
+        },
+        () => {
+            for (let i = 0; i < 5; i++) {
+                powerUps.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, type: '+' + (Math.floor(Math.random() * 5) * 2 + 2), pulse: 0, pulseDirection: 1 });
+            }
+            playPowerUp(8);
+        }
+    ];
+    if (modules.gravityWells) {
+        events.push(() => {
+            gravityWells.forEach(w => { w.x = rand(50, canvas.width - 50); w.y = rand(50, canvas.height - 50); });
+            playDash();
+        });
+    }
+    events[Math.floor(Math.random() * events.length)]();
+}
+
+/* ---------------------- 10. Collision detection ---------------------- */
+function checkCollisions() {
+    players.forEach(p => {
+        if (!p.ships.length) { p.bullets = []; return; }
+        for (let bi = p.bullets.length - 1; bi >= 0; bi--) {
+            const b = p.bullets[bi];
+            let consumed = false;
+
+            for (let tpi = 0; tpi < players.length && !consumed; tpi++) {
+                const targetPlayer = players[tpi];
+                if (targetPlayer === p || !targetPlayer.alive) continue;
+                for (let si = targetPlayer.ships.length - 1; si >= 0; si--) {
+                    const s = targetPlayer.ships[si];
+                    const dist = Math.hypot(s.x - b.x, s.y - b.y);
+                    if (dist < 8) {
+                        const isCrit = modules.criticalHits && Math.random() < 0.15;
+                        const dmg = Math.round((isCrit ? 80 : 40) * damageMultiplier(s));
+                        s.hp -= dmg;
+                        s.lastHit = Date.now();
+                        s.dx -= b.dx * 0.06;
+                        s.dy -= b.dy * 0.06;
+                        showDamage(s.x, s.y, dmg, targetPlayer.traitColor, isCrit);
+                        explosion(b.x, b.y, 6, targetPlayer.traitColor);
+                        if (isCrit) playCrit(); else playHit();
+                        if (s.hp <= 0) {
+                            targetPlayer.ships.splice(si, 1);
+                            explosion(s.x, s.y, 50, targetPlayer.traitColor);
+                            if (targetPlayer.ships.length === 0 && p.isBot) showBotMessage(p, 'kill', targetPlayer);
+                        }
+                        p.bullets.splice(bi, 1);
+                        consumed = true;
+                        break;
+                    }
+                }
+            }
+            if (consumed) continue;
+
+            for (let ai = asteroids.length - 1; ai >= 0; ai--) {
+                const a = asteroids[ai];
+                const dist = Math.hypot(a.x - b.x, a.y - b.y);
+                if (dist < a.size) {
+                    a.hp -= 40;
+                    showDamage(a.x, a.y, 40, '#fff');
+                    explosion(b.x, b.y, 6, '#999999');
+                    playAsteroidBreak();
+                    if (a.hp <= 0) {
+                        asteroids.splice(ai, 1);
+                        explosion(a.x, a.y, 50, '#999999');
+                        spawnDebrisIfEnabled(a.x, a.y, a.size);
+                        if (a.size > 6) {
+                            for (let k = 0; k < 2; k++) {
+                                asteroids.push({
+                                    x: a.x + (Math.random() - 0.5) * a.size, y: a.y + (Math.random() - 0.5) * a.size,
+                                    size: a.size / 2, dx: (Math.random() - 0.5) * 1.8, dy: (Math.random() - 0.5) * 1.8,
+                                    angle: 0, spin: (Math.random() - 0.5) * 0.025, hp: 600,
+                                    colorType: a.colorType
+                                });
+                            }
+                        }
+                    }
+                    p.bullets.splice(bi, 1);
+                    consumed = true;
+                    break;
+                }
+            }
+            if (consumed) continue;
+
+            for (let oi = 0; oi < obstacles.length; oi++) {
+                const o = obstacles[oi];
+                if (b.x + b.size > o.x && b.x - b.size < o.x + o.w && b.y + b.size > o.y && b.y - b.size < o.y + o.h && b.bounces < 2) {
+                    const overlapX = Math.min(b.x + b.size - o.x, o.x + o.w - (b.x - b.size));
+                    const overlapY = Math.min(b.y + b.size - o.y, o.y + o.h - (b.y - b.size));
+                    if (overlapX < overlapY) { b.dx *= -1; b.x += b.dx > 0 ? overlapX : -overlapX; }
+                    else { b.dy *= -1; b.y += b.dy > 0 ? overlapY : -overlapY; }
+                    b.bounces++;
+                    playRicochet();
+                    break;
+                }
+            }
+        }
+    });
+
+    for (let pi = 0; pi < players.length; pi++) {
+        const p = players[pi];
+        if (!p.ships.length) continue;
+        for (let si = p.ships.length - 1; si >= 0; si--) {
+            const s = p.ships[si];
+            for (let opi = 0; opi < players.length; opi++) {
+                if (opi === pi) continue;
+                const op = players[opi];
+                if (!op.alive) continue;
+                for (let osi = op.ships.length - 1; osi >= 0; osi--) {
+                    const os = op.ships[osi];
+                    const dist = Math.hypot(s.x - os.x, s.y - os.y);
+                    const shipSize = modules.smallMode ? Math.max(1, 6 - p.ships.length * 0.01) : Math.max(2, 12 - p.ships.length * 0.02);
+                    if (dist < shipSize) {
+                        const baseDamage = Math.max(12, Math.floor((Math.sqrt(s.dx * s.dx + s.dy * s.dy) + Math.sqrt(os.dx * os.dx + os.dy * os.dy)) * 5));
+                        const damageToS = Math.round(baseDamage * damageMultiplier(s));
+                        const damageToOs = Math.round(baseDamage * damageMultiplier(os));
+                        s.hp -= damageToS; os.hp -= damageToOs;
+                        s.lastHit = Date.now(); os.lastHit = Date.now();
+                        showDamage(s.x, s.y, damageToS, p.traitColor);
+                        showDamage(os.x, os.y, damageToOs, op.traitColor);
+                        explosion(s.x, s.y, 12, p.traitColor);
+                        playThud();
+
+                        const dx = s.x - os.x, dy = s.y - os.y;
+                        const distActual = Math.hypot(dx, dy) || 1;
+                        const pushForce = 0.12;
+                        s.dx += (dx / distActual) * pushForce; s.dy += (dy / distActual) * pushForce;
+                        os.dx -= (dx / distActual) * pushForce; os.dy -= (dy / distActual) * pushForce;
+
+                        if (s.hp <= 0) { p.ships.splice(si, 1); explosion(s.x, s.y, 50, p.traitColor); }
+                        if (os.hp <= 0) { op.ships.splice(osi, 1); explosion(os.x, os.y, 50, op.traitColor); }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    for (let ai = asteroids.length - 1; ai >= 0; ai--) {
+        const a = asteroids[ai];
+        let consumed = false;
+        for (let pi = 0; pi < players.length && !consumed; pi++) {
+            const p = players[pi];
+            if (!p.ships.length || !p.alive) continue;
+            for (let si = p.ships.length - 1; si >= 0; si--) {
+                const s = p.ships[si];
+                const dist = Math.hypot(a.x - s.x, a.y - s.y);
+                const shipSize = modules.smallMode ? Math.max(1, 6 - p.ships.length * 0.01) : Math.max(2, 12 - p.ships.length * 0.02);
+                if (dist < a.size + shipSize) {
+                    const damage = Math.round(12 * damageMultiplier(s));
+                    s.hp -= damage; a.hp -= 12;
+                    s.lastHit = Date.now();
+                    showDamage(s.x, s.y, damage, p.traitColor);
+                    showDamage(a.x, a.y, 12, '#fff');
+                    explosion(s.x, s.y, 18, p.traitColor);
+                    playSolidImpact();
+
+                    const dx = s.x - a.x, dy = s.y - a.y;
+                    const distActual = Math.hypot(dx, dy) || 1;
+                    const pushForce = 0.18;
+                    s.dx += (dx / distActual) * pushForce; s.dy += (dy / distActual) * pushForce;
+
+                    if (s.hp <= 0) { p.ships.splice(si, 1); explosion(s.x, s.y, 50, p.traitColor); }
+                    if (a.hp <= 0) {
+                        asteroids.splice(ai, 1);
+                        explosion(a.x, a.y, 50, '#999999');
+                        spawnDebrisIfEnabled(a.x, a.y, a.size);
+                        if (a.size > 6) {
+                            for (let k = 0; k < 2; k++) {
+                                asteroids.push({
+                                    x: a.x + (Math.random() - 0.5) * a.size, y: a.y + (Math.random() - 0.5) * a.size,
+                                    size: a.size / 2, dx: (Math.random() - 0.5) * 1.8, dy: (Math.random() - 0.5) * 1.8,
+                                    angle: 0, spin: (Math.random() - 0.5) * 0.025, hp: 600,
+                                    colorType: a.colorType
+                                });
+                            }
+                        }
+                        consumed = true;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    obstacles.forEach(o => {
+        players.forEach(p => {
+            if (!p.ships.length || !p.alive) return;
+            for (let si = p.ships.length - 1; si >= 0; si--) {
+                const s = p.ships[si];
+                const shipSize = modules.smallMode ? Math.max(1, 6 - p.ships.length * 0.01) : Math.max(2, 12 - p.ships.length * 0.02);
+                const shipLeft = s.x - shipSize, shipRight = s.x + shipSize, shipTop = s.y - shipSize, shipBottom = s.y + shipSize;
+                const obsLeft = o.x, obsRight = o.x + o.w, obsTop = o.y, obsBottom = o.y + o.h;
+                if (shipRight > obsLeft && shipLeft < obsRight && shipBottom > obsTop && shipTop < obsBottom) {
+                    const overlapX = Math.min(shipRight - obsLeft, obsRight - shipLeft);
+                    const overlapY = Math.min(shipBottom - obsTop, obsBottom - shipTop);
+                    if (overlapX < overlapY) {
+                        if (s.x < o.x + o.w / 2) { s.x -= overlapX; s.dx = 0; } else { s.x += overlapX; s.dx = 0; }
+                    } else {
+                        if (s.y < o.y + o.h / 2) { s.y -= overlapY; s.dy = 0; } else { s.y += overlapY; s.dy = 0; }
+                    }
+                    playSolidImpact();
+                }
+            }
+        });
+    });
+
+    if (modules.shieldRegen) {
+        const now = Date.now();
+        players.forEach(p => {
+            p.ships.forEach(s => {
+                if (now - s.lastHit > 4000 && s.hp < s.maxHp) {
+                    s.hp = Math.min(s.maxHp, s.hp + s.maxHp * 0.03 / 60);
+                }
+            });
+        });
+    }
+
+    players.forEach((p, idx) => {
+        if (!p.ships.length && p.alive) {
+            p.lives--;
+            if (p.lives > 0 && modules.threeLives) {
+                const pos = { x: rand(12.5, canvas.width - 12.5), y: rand(12.5, canvas.height - 12.5) };
+                p.ships.push(makeShip(pos.x, pos.y, 0, 'full'));
+                playRespawn();
+            } else {
+                p.alive = false;
+                p.bullets = [];
+                eliminations.push({ name: p.name, time: Date.now() });
+                if (p.isBot) showBotMessage(p, 'death');
+                pushSystemChat(p.name.toUpperCase() + ' HAS BEEN ELIMINATED');
+                const lp = p.lastPos || { x: canvas.width / 2, y: canvas.height / 2 };
+                explosion(lp.x, lp.y, 200, p.traitColor, 1.5, true);
+                playElimination();
+            }
+        }
+    });
+}
+
+/* ---------------------- 11. Main loop & boot ---------------------- */
+function gameLoop(currentTime) {
+    const deltaTime = Math.min(0.1, (currentTime - lastTime) / 1000);
+    lastTime = currentTime;
+    resetSoundBudget();
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    frameCount++;
+
+    drawNebula();
+    drawStars();
+    drawObstacles();
+    if (modules.gravityWells) drawGravityWells();
+
+    if (gameState === 'menu') {
+        menuBots.forEach((bot, i) => updatePlayer(bot, i, true, deltaTime));
+        checkCollisions();
+        menuBots.forEach(bot => {
+            if (!bot.ships.length) {
+                const pos = { x: rand(12.5, canvas.width - 12.5), y: rand(12.5, canvas.height - 12.5) };
+                bot.ships.push(makeShip(pos.x, pos.y, 0, 'full'));
+                bot.alive = true;
+            }
+            bot.ships.forEach((s, si) => drawShip(s, bot.ships.length, si === 0, false, bot));
+            drawBullets(bot);
+        });
+        updateParticles(deltaTime);
+        drawShockwaves();
+        drawDamageFormationPowerUp();
+    } else if (gameState === 'countdown' || gameState === 'playing') {
+        if (gameState === 'countdown') {
+            const elapsed = Date.now() - countdownStart;
+            countdownValue = Math.max(0, Math.ceil(3 - elapsed / 1000));
+            if (elapsed > 4000) gameState = 'playing';
+        }
+
+        players.forEach((p, i) => updatePlayer(p, i, false, deltaTime));
+        spawnPowerUps();
+        updatePowerUps();
+        updateAsteroids(deltaTime);
+        if (modules.debrisField) updateDebris(deltaTime);
+        checkCollisions();
+
+        players.forEach(p => {
+            if (p.alive && p.ships.length > 0) {
+                p.ships.forEach((s, si) => drawShip(s, p.ships.length, si === 0, !p.isBot, p));
+                drawBullets(p);
+            }
+        });
+
+        if (modules.chaosMode) {
+            chaosTimer += deltaTime;
+            if (chaosTimer >= 30) { triggerChaosEvent(); chaosTimer = 0; }
+        }
+
+        updateParticles(deltaTime);
+        drawShockwaves();
+        drawDamageFormationPowerUp();
+
+        if (modules.separation) {
+            const midX = canvas.width / 2, midY = canvas.height / 2;
+            const quarters = [0, 1, 2, 3].map(q => players.filter(p => p.alive && p.ships.length > 0 && p.quarter === q).length);
+            ctx.strokeStyle = 'rgba(255,77,109,0.55)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            if (quarters.some(q => q > 1)) {
+                ctx.beginPath(); ctx.moveTo(midX, 0); ctx.lineTo(midX, canvas.height); ctx.moveTo(0, midY); ctx.lineTo(canvas.width, midY); ctx.stroke();
+            } else if (quarters.filter(q => q === 1).length > 1) {
+                ctx.beginPath(); ctx.moveTo(midX, 0); ctx.lineTo(midX, canvas.height); ctx.stroke();
+            }
+            ctx.setLineDash([]);
+        }
+
+        if (gameState === 'countdown') {
+            const text = countdownValue > 0 ? String(countdownValue) : 'GO!';
+            if (text !== lastCountdownShown) {
+                lastCountdownShown = text;
+                countdownLabel.textContent = text;
+                countdownLabel.style.fontSize = text === 'GO!' ? 'clamp(40px,7vw,64px)' : 'clamp(60px,10vw,96px)';
+                countdownLabel.style.animation = 'none';
+                void countdownLabel.offsetWidth;
+                countdownLabel.style.animation = 'countPop 0.5s cubic-bezier(.2,.8,.2,1)';
+                playCountdownBeep(countdownValue === 0);
+            }
+        } else if (countdownLabel.style.display !== 'none') {
+            countdownLabel.style.display = 'none';
+        }
+
+        const alivePlayers = players.filter(p => p.alive && p.ships.length > 0);
+        if (alivePlayers.length <= 1 && gameState === 'playing') {
+            gameState = 'victory';
+            victoryDisplayTime = Date.now();
+            const durationText = formatTime(Date.now() - matchStartTime);
+            const activeModuleCount = MODULE_DEFS.filter(m => modules[m.id]).length;
+            if (alivePlayers.length === 1) {
+                const w = alivePlayers[0];
+                winnerText.textContent = w.name + ' Wins!';
+                victorySub.textContent = 'Eliminated ' + eliminations.length + ' hostile fleet' + (eliminations.length === 1 ? '' : 's') + ' in ' + durationText;
+                pushSystemChat('MATCH COMPLETE — ' + w.name.toUpperCase() + ' WINS');
+            } else {
+                winnerText.textContent = 'No Winner';
+                victorySub.textContent = 'Mutual destruction after ' + durationText;
+                pushSystemChat('MATCH COMPLETE — NO SURVIVORS');
+            }
+            victoryStats.innerHTML =
+                '<div class="stat-chip"><div class="sc-val">' + durationText + '</div><div class="sc-label">Duration</div></div>' +
+                '<div class="stat-chip"><div class="sc-val">' + eliminations.length + '</div><div class="sc-label">Eliminations</div></div>' +
+                '<div class="stat-chip"><div class="sc-val">' + activeModuleCount + '</div><div class="sc-label">Modules Active</div></div>';
+            victoryScreen.classList.add('active');
+            playVictoryFanfare();
+        }
+
+        fleetList.innerHTML = '';
+        players.forEach((p, i) => {
+            if (p.alive && p.ships.length > 0) {
+                const totalHP = getTotalHP(p);
+                const maxHP = getMaxHPPool(p);
+                const hpPercent = maxHP > 0 ? (totalHP / maxHP * 100) : 0;
+                const div = document.createElement('div');
+                div.className = 'fleet-card';
+                div.style.setProperty('--fc-color', p.traitColor);
+                div.innerHTML =
+                    '<div class="fc-row"><span class="fc-name">' + p.name + '</span><span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
+                    '<div class="fc-bar-track"><div class="fc-bar-fill" style="width:' + clamp(hpPercent, 0, 100) + '%"></div></div>' +
+                    '<div class="fc-meta"><span>' + hpPercent.toFixed(0) + '% HP</span><span>' + (modules.threeLives ? 'Lives ' + p.lives : '') + '</span></div>';
+                fleetList.appendChild(div);
+            }
+        });
+        for (let i = eliminations.length - 1; i >= 0; i--) {
+            if (Date.now() - eliminations[i].time >= 5000) eliminations.splice(i, 1);
+        }
+        elimList.innerHTML = eliminations.map(e => '<div class="elim-toast">' + e.name + ' eliminated</div>').join('');
+        hudClock.textContent = formatTime(Date.now() - matchStartTime);
+        drawRadar();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+window.onload = () => {
+    gameContainer = document.getElementById('gameContainer');
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    canvasWrap = document.getElementById('canvasWrap');
+    radarCanvas = document.getElementById('radarCanvas');
+    radarCtx = radarCanvas.getContext('2d');
+    uiPanel = document.getElementById('uiPanel');
+    fleetList = document.getElementById('fleetList');
+    elimList = document.getElementById('elimList');
+    hudClock = document.getElementById('hudClock');
+    countdownLabel = document.getElementById('countdownLabel');
+
+    menu = document.getElementById('menu');
+    botMenu = document.getElementById('botMenu');
+    difficultyMenu = document.getElementById('difficultyMenu');
+    moduleMenu = document.getElementById('moduleMenu');
+    howToPlay = document.getElementById('howToPlay');
+    settingsModal = document.getElementById('settingsModal');
+    victoryScreen = document.getElementById('victoryScreen');
+    lineupScreen = document.getElementById('lineupScreen');
+    chatLogEl = document.getElementById('chatLog');
+    winnerText = document.getElementById('winnerText');
+    victorySub = document.getElementById('victorySub');
+    victoryStats = document.getElementById('victoryStats');
+    victoryHint = document.getElementById('victoryHint');
+
+    const squareSize = Math.min(gameContainer.clientWidth - sidebarWidth, gameContainer.clientHeight);
+    canvas.width = squareSize;
+    canvas.height = squareSize;
+
+    renderBotCountGrid();
+    renderDifficultyGrid();
+    renderModuleGrid();
+    renderPresetGrid();
+    renderThemeGrid();
+    renderDocModules();
+    renderDocFormations();
+
+    const copyYearEl = document.getElementById('copyYear');
+    if (copyYearEl) copyYearEl.textContent = String(new Date().getFullYear());
+
+    document.addEventListener('keydown', e => {
+        keys[e.key] = true;
+        if (gameState === 'victory' && Date.now() - victoryDisplayTime >= 3000) {
+            restartGame();
+        }
+    });
+    document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+    initMenuBots();
+    requestAnimationFrame(gameLoop);
+};
+</script>
+</body>
+</html>
