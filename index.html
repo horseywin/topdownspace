@@ -85,20 +85,23 @@
         --stage-a: rgba(4,20,12,0.9); --stage-b: rgba(1,5,3,1);
     }
     html[data-theme="anime"] {
-        --void-0: #150a20; --void-1: #201032; --void-2: #2c1844;
-        --panel-bg: rgba(30,15,48,0.88); --panel-bg-soft: rgba(38,19,58,0.74);
-        --panel-line: rgba(255,120,205,0.3);
-        --cyan: #ff5fc4; --cyan-dim: #d43fa0; --violet: #4de8ff; --violet-dim: #2cb8d9;
-        --gold: #ffe066; --danger: #ff4d6d; --success: #6dffb8;
-        --text-hi: #fff0fa; --text-mid: #e0b3d9; --text-dim: #ad82ab;
-        --glow-a: rgba(255,95,196,0.2); --glow-b: rgba(77,232,255,0.16);
-        --stage-a: rgba(42,18,58,0.9); --stage-b: rgba(12,5,18,1);
+        --void-0: #050d12; --void-1: #0a1a20; --void-2: #10262c;
+        --panel-bg: rgba(18,10,14,0.9); --panel-bg-soft: rgba(24,13,17,0.78);
+        --panel-line: rgba(255,40,60,0.35);
+        --cyan: #ff2438; --cyan-dim: #cc1c2c; --violet: #4de8ff; --violet-dim: #2cb8d9;
+        --gold: #ffcf3d; --danger: #ff2438; --success: #6dffb8;
+        --text-hi: #fff3e0; --text-mid: #e0b8a8; --text-dim: #9a746a;
+        --glow-a: rgba(255,36,56,0.22); --glow-b: rgba(20,150,180,0.16);
+        --stage-a: rgba(8,26,32,0.94); --stage-b: rgba(3,8,10,1);
         --font-display: 'Baloo 2', sans-serif;
     }
 
-    /* Anime theme also softens the whole "military HUD" shape language:
-       rounded corners everywhere instead of angular clip-path cuts, and the
-       corner-bracket HUD decorations are turned off in favor of a plain glow. */
+    /* Anime theme goes the opposite direction from the base "military HUD"
+       look: sharp diagonal-cut panels and banners instead of soft rounded
+       cards, high-contrast dark-teal/near-black backgrounds with a hard red
+       accent, and bold outlined display type — closer to the genre's actual
+       menu language (the "SELECT MODE" list-with-a-diagonal-highlight
+       pattern) than a simple palette swap. */
     html[data-theme="anime"] .btn,
     html[data-theme="anime"] .option-card,
     html[data-theme="anime"] .module-card,
@@ -107,20 +110,81 @@
     html[data-theme="anime"] .fleet-card,
     html[data-theme="anime"] .pilot-swatch-custom,
     html[data-theme="anime"] .net-code-display {
-        clip-path: none !important;
-        border-radius: 16px !important;
+        clip-path: polygon(2.5% 0, 100% 0, 97.5% 100%, 0 100%) !important;
+        border-radius: 0 !important;
+        border-color: rgba(255,60,80,0.3) !important;
     }
-    html[data-theme="anime"] .btn-sm { border-radius: 12px !important; }
     html[data-theme="anime"] .console-panel,
     html[data-theme="anime"] .doc-panel {
-        border-radius: 26px !important;
+        clip-path: polygon(0 0, 100% 0, 100% 97%, 98.5% 100%, 0 100%) !important;
+        border-radius: 0 !important;
         background-image: none !important;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 60px rgba(255,95,196,0.18) !important;
+        border: 1px solid rgba(255,50,70,0.4) !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 50px rgba(255,36,56,0.15) !important;
     }
     html[data-theme="anime"] .corner-frame { opacity: 0 !important; }
     html[data-theme="anime"] .logo-title { letter-spacing: 0.5px !important; }
     html[data-theme="anime"] .ship-icon,
     html[data-theme="anime"] .pilot-swatch { border-radius: 50%; }
+    html[data-theme="anime"] .eyebrow {
+        background: var(--cyan); color: #150406 !important;
+        display: inline-block; padding: 3px 14px;
+        clip-path: polygon(4% 0, 100% 0, 96% 100%, 0 100%);
+        font-weight: 800 !important; letter-spacing: 1.5px !important;
+    }
+
+    /* Main-menu-specific pop treatment: outlined gradient title, a Japanese
+       subtitle line, and bold diagonal banner buttons in the dark-red list
+       style the reference image uses for its mode list. */
+    .anime-subtitle { display: none; }
+    html[data-theme="anime"] .anime-subtitle {
+        display: block;
+        font-family: var(--font-display); font-weight: 800;
+        font-size: 15px; letter-spacing: 2px;
+        color: var(--gold);
+        text-shadow: 0 0 12px rgba(255,207,61,0.6);
+        margin: -6px 0 14px;
+    }
+    html[data-theme="anime"] .logo-title {
+        background: linear-gradient(180deg, #fff6ea 0%, var(--gold) 45%, var(--cyan) 100%);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        -webkit-text-stroke: 1.5px rgba(0,0,0,0.5);
+        text-shadow: 3px 3px 0 rgba(0,0,0,0.6), 0 0 30px rgba(255,36,56,0.55);
+        transform: skewX(-4deg);
+        font-weight: 900 !important;
+    }
+    html[data-theme="anime"] #menu .btn-primary {
+        clip-path: polygon(3.5% 0, 100% 0, 96.5% 100%, 0 100%) !important;
+        border-radius: 0 !important;
+        border: 1px solid rgba(255,60,80,0.25) !important;
+        background: linear-gradient(90deg, rgba(20,8,10,0.95), rgba(45,12,16,0.9)) !important;
+        text-align: left;
+        justify-content: flex-start;
+        padding-left: 22px !important;
+        position: relative;
+        overflow: visible;
+    }
+    html[data-theme="anime"] #menu .btn-primary::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+        background: linear-gradient(180deg, var(--cyan), var(--gold));
+        clip-path: polygon(0 0, 100% 0, 60% 100%, 0 100%);
+    }
+    html[data-theme="anime"] #menu .btn-primary:hover {
+        background: linear-gradient(90deg, var(--cyan-dim), rgba(255,207,61,0.35)) !important;
+        transform: translateX(2px) skewX(-1deg);
+    }
+    /* A dark diagonal-cut strip behind the title block, mimicking the
+       reference's black instruction bar across the very top of the menu. */
+    html[data-theme="anime"] #menu .console-panel::before {
+        content: 'FLEET COMMAND — SELECT YOUR PATH TO VICTORY';
+        display: block;
+        background: #0a0407; color: var(--gold);
+        font-family: var(--font-display); font-size: 10px; font-weight: 700;
+        letter-spacing: 1.5px; text-align: center;
+        padding: 6px 10px; margin: -34px -34px 22px;
+        clip-path: polygon(0 0, 100% 0, 100% 78%, 98% 100%, 2% 100%, 0 78%);
+        border-bottom: 1px solid rgba(255,36,56,0.4);
+    }
 
     * { box-sizing: border-box; }
 
@@ -288,6 +352,7 @@
         font-weight: 600;
     }
     .fleet-card .fc-name { color: var(--text-hi); }
+    .fc-team-tag { font-family: var(--font-display); font-size: 8.5px; font-weight: 800; letter-spacing: 0.8px; margin-left: 4px; }
     .fleet-card .fc-ships { color: var(--text-mid); font-size: 11px; font-weight: 500; }
     .fleet-card .fc-bar-track {
         height: 5px;
@@ -556,11 +621,11 @@
 
     .top-right-controls {
         position: absolute; top: 16px; right: 16px;
-        display: flex; gap: 8px; z-index: 3;
+        display: flex; gap: 8px; z-index: 35;
     }
     .top-left-controls {
         position: absolute; top: 16px; left: 16px;
-        display: flex; gap: 8px; z-index: 3;
+        display: flex; gap: 8px; z-index: 35;
     }
 
     /* =========================================================
@@ -672,6 +737,42 @@
     }
     .module-card.on .mc-switch { background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)); }
     .module-card.on .mc-switch::after { transform: translateX(14px); background: #fff; box-shadow: 0 0 6px rgba(47,224,255,0.8); }
+
+    /* Settings modal: tabs + keybind rows + volume slider */
+    .settings-tabs {
+        display: flex; gap: 6px; margin: 4px 0 16px; border-bottom: 1px solid var(--panel-line); padding-bottom: 0;
+    }
+    .settings-tab {
+        background: none; border: none; cursor: pointer;
+        font-family: var(--font-body); font-weight: 600; font-size: 12.5px;
+        color: var(--text-dim); padding: 8px 4px 10px; letter-spacing: 0.4px;
+        border-bottom: 2px solid transparent; transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+    }
+    .settings-tab:hover { color: var(--text-hi); }
+    .settings-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+    .settings-panel { display: none; }
+    .settings-panel.active { display: block; }
+    .keybind-row {
+        display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        padding: 9px 12px; border-radius: 6px; background: var(--panel-bg-soft);
+        border: 1px solid var(--panel-line); margin-bottom: 6px;
+    }
+    .keybind-label { font-size: 12.5px; color: var(--text-mid); font-weight: 600; }
+    .keybind-key {
+        font-family: var(--font-display); font-size: 11.5px; font-weight: 700;
+        color: var(--text-hi); background: rgba(255,255,255,0.06);
+        border: 1px solid var(--panel-line); border-radius: 4px;
+        padding: 5px 12px; min-width: 60px; text-align: center; cursor: pointer;
+        transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+    }
+    .keybind-key:hover { border-color: var(--cyan); color: var(--cyan); }
+    .keybind-key.listening { border-color: var(--gold); color: var(--gold); animation: zoneIconBlink 0.8s step-start infinite; }
+    .volume-row {
+        display: flex; align-items: center; gap: 10px; padding: 4px 2px;
+    }
+    .volume-row input[type="range"] {
+        flex-grow: 1; accent-color: var(--cyan); cursor: pointer;
+    }
 
     .module-toolbar {
         display: flex; justify-content: space-between; align-items: center;
@@ -922,6 +1023,113 @@
     }
     @keyframes countPop { 0% { transform: translate(-50%,-50%) scale(0.4); opacity: 0; } 60% { transform: translate(-50%,-50%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(1); opacity: 1; } }
 
+    /* Safe-zone proximity warning: a screen-edge red vignette plus a pulsing
+       banner. Two severities — "closing" (still inside, near the border) and
+       "outside" (actively taking zone damage) — are toggled via a class on
+       #zoneVignette / #zoneWarning rather than separate elements. */
+    #zoneVignette {
+        position: absolute; inset: 0; pointer-events: none; z-index: 7;
+        opacity: 0; transition: opacity 0.35s ease;
+        box-shadow: inset 0 0 60px 10px rgba(255,20,50,0.0);
+    }
+    #zoneVignette.zv-warn {
+        opacity: 1;
+        box-shadow: inset 0 0 90px 14px rgba(255,20,50,0.35);
+        animation: zoneVignettePulse 1.6s ease-in-out infinite;
+    }
+    #zoneVignette.zv-danger {
+        opacity: 1;
+        box-shadow: inset 0 0 130px 26px rgba(255,10,40,0.6);
+        animation: zoneVignettePulse 0.7s ease-in-out infinite;
+    }
+    @keyframes zoneVignettePulse {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.5); }
+    }
+    #zoneWarning {
+        position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+        display: none; align-items: center; gap: 8px;
+        padding: 7px 18px 7px 14px; border-radius: 5px;
+        background: rgba(20,3,8,0.78); border: 1px solid rgba(255,60,90,0.7);
+        color: #ffd6dd; font-family: var(--font-display); font-weight: 700;
+        font-size: 12.5px; letter-spacing: 1.2px; text-transform: uppercase;
+        box-shadow: 0 0 22px rgba(255,20,50,0.45);
+        pointer-events: none; z-index: 9;
+        animation: zoneWarnPop 0.35s var(--ease);
+    }
+    #zoneWarning.active { display: flex; }
+    #zoneWarning svg { width: 15px; height: 15px; flex-shrink: 0; color: #ff5a76; animation: zoneIconBlink 1s step-start infinite; }
+    #zoneWarning.zw-danger { border-color: #ff2f4f; background: rgba(40,3,8,0.88); }
+    #zoneWarning.zw-danger svg { color: #ff2f4f; }
+    @keyframes zoneWarnPop { 0% { opacity: 0; transform: translateX(-50%) translateY(-8px); } 100% { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes zoneIconBlink { 50% { opacity: 0.25; } }
+
+    #spectateLabel {
+        position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+        display: none; align-items: center; gap: 8px;
+        padding: 7px 16px; border-radius: 5px;
+        background: rgba(4,10,20,0.78); border: 1px solid var(--panel-line);
+        color: var(--text-mid); font-family: var(--font-display); font-weight: 600;
+        font-size: 11.5px; letter-spacing: 0.8px; text-transform: uppercase;
+        pointer-events: none; z-index: 9;
+    }
+    #spectateLabel.active { display: flex; }
+    #spectateLabel svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--cyan); }
+
+    .king-arrow {
+        position: absolute; top: 0; left: 0; display: none;
+        flex-direction: column; align-items: center; gap: 2px;
+        pointer-events: none; z-index: 9;
+        transform-origin: center;
+    }
+    .king-arrow.active { display: flex; }
+    .king-arrow svg { width: 20px; height: 20px; filter: drop-shadow(0 0 4px currentColor); }
+    .king-arrow span {
+        font-family: var(--font-display); font-size: 8.5px; font-weight: 700;
+        letter-spacing: 0.6px; white-space: nowrap;
+        background: rgba(4,10,20,0.7); padding: 1px 5px; border-radius: 3px;
+    }
+    .king-arrow-own { color: var(--cyan); }
+    .king-arrow-enemy { color: var(--danger); }
+
+    #kingCommandLegend {
+        position: absolute; bottom: 16px; left: 16px;
+        display: none; flex-direction: column; gap: 3px;
+        background: rgba(4,10,20,0.78); border: 1px solid var(--panel-line);
+        border-radius: 6px; padding: 8px 12px; z-index: 9; pointer-events: none;
+    }
+    #kingCommandLegend.active { display: flex; }
+    #kingCommandLegend .kcl-title {
+        font-family: var(--font-display); font-size: 10px; font-weight: 800;
+        letter-spacing: 0.8px; color: var(--gold); margin-bottom: 2px; text-transform: uppercase;
+    }
+    #kingCommandLegend .kcl-row {
+        font-size: 11.5px; color: var(--text-mid); display: flex; align-items: center; gap: 7px;
+    }
+    #kingCommandLegend kbd {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 16px; height: 16px; border-radius: 3px;
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        font-family: var(--font-display); font-size: 10px; color: var(--text-hi);
+    }
+    #kingCommandBanner {
+        position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+        display: none; flex-direction: column; align-items: center; gap: 2px;
+        font-family: var(--font-display); font-weight: 900; text-align: center;
+        color: var(--gold); text-shadow: 0 0 20px rgba(255,209,102,0.7), 0 3px 0 rgba(0,0,0,0.4);
+        font-size: 26px; letter-spacing: 1.5px; text-transform: uppercase;
+        pointer-events: none; z-index: 12; opacity: 0;
+    }
+    #kingCommandBanner span { font-size: 11px; font-weight: 700; color: var(--text-mid); letter-spacing: 2px; text-shadow: none; }
+    #kingCommandBanner.show { display: flex; animation: kingBannerPop 1.6s var(--ease) forwards; }
+    @keyframes kingBannerPop {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+        12% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+        20% { transform: translate(-50%, -50%) scale(1); }
+        78% { opacity: 1; }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+    }
+
     #victoryScreen .console-panel { text-align: center; padding: 40px 40px 34px; }
     .podium-icon { width: 64px; height: 64px; margin: 0 auto 10px; color: var(--gold); animation: chipFloat 2.4s ease-in-out infinite; }
     #winnerText {
@@ -995,6 +1203,31 @@
         <canvas id="gameCanvas"></canvas>
         <div class="corner-frame"></div>
         <div id="countdownLabel" style="display:none;"></div>
+        <div id="zoneVignette"></div>
+        <div id="zoneWarning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span id="zoneWarningText">SAFE ZONE CLOSING</span>
+        </div>
+        <div id="spectateLabel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>SPECTATING &mdash; WASD/Arrows to look, Q/E to zoom</span>
+        </div>
+        <div id="kingArrowOwn" class="king-arrow king-arrow-own">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 14h5v8h6v-8h5z"></path></svg>
+            <span>YOUR KING</span>
+        </div>
+        <div id="kingArrowEnemy" class="king-arrow king-arrow-enemy">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 14h5v8h6v-8h5z"></path></svg>
+            <span>ENEMY KING</span>
+        </div>
+        <div id="kingCommandLegend">
+            <div class="kcl-title">King's Orders</div>
+            <div class="kcl-row"><kbd>1</kbd> Regroup</div>
+            <div class="kcl-row"><kbd>2</kbd> Scatter</div>
+            <div class="kcl-row"><kbd>3</kbd> Defend</div>
+            <div class="kcl-row"><kbd>4</kbd> Attack</div>
+        </div>
+        <div id="kingCommandBanner"></div>
     </div>
     <div id="uiPanel">
         <div class="hud-title"><span>FLEET STATUS</span><span id="hudClock">00:00</span></div>
@@ -1044,6 +1277,7 @@
         <div class="console-panel">
             <p class="eyebrow">FLEET COMMAND PROTOCOL</p>
             <h1 class="logo-title">TOP DOWN SPACE</h1>
+            <p class="anime-subtitle">銀河艦隊決戦 &mdash; トップダウンスペース</p>
             <p class="logo-sub">Command a growing fleet · Master the formation · Own the void</p>
             <div class="btn-col" style="margin: 0 auto;">
                 <button class="btn btn-primary btn-full" onclick="showBotMenu(1)">
@@ -1097,6 +1331,8 @@
             </div>
             <div class="module-group-label" style="margin-top:0;">Ship Color</div>
             <div id="customizeSwatches" class="theme-grid" style="grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));"></div>
+            <div class="module-group-label">Ship Design</div>
+            <div id="hullGrid" class="theme-grid" style="grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));"></div>
             <div class="btn-row" style="margin-top:16px;">
                 <button class="btn btn-ghost" onclick="activateScreen(menu)">Done</button>
             </div>
@@ -1202,25 +1438,63 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
             </button>
             <h2 class="section-title">Settings</h2>
-            <p class="section-sub">Theme, display &amp; browser-tab preferences</p>
-            <div class="module-group-label" style="margin-top:0;">Theme</div>
-            <div id="themeGrid" class="theme-grid"></div>
-            <div class="module-group-label">Browser Tab</div>
-            <div class="module-card" id="newTabRow" style="cursor:default;">
-                <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"></rect><path d="M3 9h18"></path></svg></div>
-                <div class="mc-body">
-                    <div class="mc-title">Disguise as New Tab</div>
-                    <div class="mc-desc">Renames the browser tab title/icon to look like a blank New Tab page.</div>
-                </div>
-                <div class="mc-switch" id="newTabSwitch" onclick="toggleNewTab()"></div>
+            <p class="section-sub">Display, controls &amp; audio preferences</p>
+
+            <div class="settings-tabs">
+                <button class="settings-tab active" data-tab="display" onclick="switchSettingsTab('display')">Display</button>
+                <button class="settings-tab" data-tab="controls" onclick="switchSettingsTab('controls')">Controls</button>
+                <button class="settings-tab" data-tab="audio" onclick="switchSettingsTab('audio')">Audio</button>
             </div>
-            <div id="faviconOptions" class="btn-row" style="display:none; margin-top:10px;">
-                <button class="btn btn-ghost btn-sm" onclick="setFavicon('light')">Light Icon</button>
-                <button class="btn btn-ghost btn-sm" onclick="setFavicon('dark')">Dark Icon</button>
+
+            <div class="settings-panel active" id="settingsPanel-display">
+                <div class="module-group-label" style="margin-top:0;">Theme</div>
+                <div id="themeGrid" class="theme-grid"></div>
+                <div class="module-group-label">Browser Tab</div>
+                <div class="module-card" id="newTabRow" style="cursor:default;">
+                    <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"></rect><path d="M3 9h18"></path></svg></div>
+                    <div class="mc-body">
+                        <div class="mc-title">Disguise as New Tab</div>
+                        <div class="mc-desc">Renames the browser tab title/icon to look like a blank New Tab page.</div>
+                    </div>
+                    <div class="mc-switch" id="newTabSwitch" onclick="toggleNewTab()"></div>
+                </div>
+                <div id="faviconOptions" class="btn-row" style="display:none; margin-top:10px;">
+                    <button class="btn btn-ghost btn-sm" onclick="setFavicon('light')">Light Icon</button>
+                    <button class="btn btn-ghost btn-sm" onclick="setFavicon('dark')">Dark Icon</button>
+                </div>
+            </div>
+
+            <div class="settings-panel" id="settingsPanel-controls">
+                <div class="module-group-label" style="margin-top:0;">Keybinds</div>
+                <p class="section-sub" style="margin-top:-6px;">Click a key, then press any key to rebind it.</p>
+                <div id="keybindList"></div>
+                <div class="btn-row" style="margin-top:10px;">
+                    <button class="btn btn-ghost btn-sm" onclick="resetControls()">Reset to Defaults (WASD)</button>
+                </div>
+                <p class="section-sub" id="rebindHint" style="margin-top:10px; display:none;"></p>
+            </div>
+
+            <div class="settings-panel" id="settingsPanel-audio">
+                <div class="module-group-label" style="margin-top:0;">Sound</div>
+                <div class="module-card" id="muteRow" style="cursor:default;">
+                    <div class="mc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M23 9l-6 6"></path><path d="M17 9l6 6"></path></svg></div>
+                    <div class="mc-body">
+                        <div class="mc-title">Mute All Audio</div>
+                        <div class="mc-desc">Silences engine, weapon &amp; UI sounds entirely.</div>
+                    </div>
+                    <div class="mc-switch" id="muteSwitch" onclick="toggleMute()"></div>
+                </div>
+                <div class="module-group-label">Master Volume</div>
+                <div class="volume-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;color:var(--text-dim);"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="85" oninput="setVolume(this.value)">
+                    <span id="volumeValue" style="min-width:34px; text-align:right; font-family:var(--font-display); font-size:12px; color:var(--text-mid);">85%</span>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- ============ ONLINE: GLOBAL LOBBY ============ -->
 <div id="netMenu" class="screen">
@@ -1404,7 +1678,7 @@
 </div>
 
 <div id="netBanner" class="net-banner" style="display:none;"></div>
-<div id="copyrightTag">© <span id="copyYear"></span> Top Down Space — <span>Zachary-Cheung</span></div>
+<div id="copyrightTag">© <span id="copyYear"></span> Top Down Space — <a href="https://horseywin.github.io/bio/" target="_blank" rel="noopener" style="color:inherit;">Zachary Cheung (horseywin)</a></div>
 
 <script>
 /* =========================================================================
@@ -1427,7 +1701,8 @@
 let gameContainer, canvas, ctx, canvasWrap, radarCanvas, radarCtx, uiPanel,
     menu, botMenu, difficultyMenu, moduleMenu, howToPlay, settingsModal, victoryScreen, lineupScreen,
     netMenu, customizeScreen,
-    winnerText, victorySub, victoryStats, victoryHint, fleetList, elimList, hudClock, countdownLabel, chatLogEl;
+    winnerText, victorySub, victoryStats, victoryHint, fleetList, elimList, hudClock, countdownLabel, chatLogEl,
+    zoneVignette, zoneWarning, zoneWarningText, spectateLabel, kingArrowOwn, kingArrowEnemy, kingCommandLegend, kingCommandBanner;
 
 let victoryDisplayTime = 0;
 let playerCount = 0;
@@ -1444,6 +1719,22 @@ let lastCountdownShown = null;
 const MAX_PARTICLES = 2200;
 let MAX_SHIPS_PER_PLAYER = 100;
 const PLAYER_SPEED = { max: 1.5, min: -0.9, acceleration: 0.08, deceleration: 0.94 };
+const DEFAULT_PLAYER_SPEED = { ...PLAYER_SPEED };
+// Creators Edition: noticeably slower, weightier flight — engagements start
+// at range and closing the gap is a real decision, not a reflex twitch.
+function applySpeedTuning() {
+    if (modules.creatorsEdition) {
+        PLAYER_SPEED.max = DEFAULT_PLAYER_SPEED.max * 0.72;
+        PLAYER_SPEED.min = DEFAULT_PLAYER_SPEED.min * 0.72;
+        PLAYER_SPEED.acceleration = DEFAULT_PLAYER_SPEED.acceleration * 0.6;
+        PLAYER_SPEED.deceleration = DEFAULT_PLAYER_SPEED.deceleration;
+    } else {
+        PLAYER_SPEED.max = DEFAULT_PLAYER_SPEED.max;
+        PLAYER_SPEED.min = DEFAULT_PLAYER_SPEED.min;
+        PLAYER_SPEED.acceleration = DEFAULT_PLAYER_SPEED.acceleration;
+        PLAYER_SPEED.deceleration = DEFAULT_PLAYER_SPEED.deceleration;
+    }
+}
 const MIN_DISTANCE = 100;
 const ASTEROID_SPAWN_DISTANCE = 100;
 const sidebarWidth = 260;
@@ -1457,11 +1748,59 @@ const ZONE_SHRINK_FACTOR = 0.72;
 const ZONE_TICK_DAMAGE = 18;
 const ZONE_TICK_INTERVAL = 700;
 const BATTLE_ROYALE_AUTO_TRIGGER_MS = 5 * 60 * 1000;
+const ZONE_WARN_DISTANCE = 170;   // px inside the border where the "closing" warning starts
+let zoneWarnState = 'none';       // 'none' | 'warn' | 'danger' — avoids redundant DOM writes
+
+/* ---- Mini-gunners: orbiting escort turrets picked up as a power-up ---- */
+const GUNNER_MAX = 6;
+const GUNNER_FIRE_INTERVAL = 650;   // ms between shots, per gunner
+const GUNNER_BULLET_SPEED = 3.2;
+const GUNNER_ORBIT_SPEED = 0.7;     // radians/sec
+function fleetGunnerRadius(player) {
+    // Orbit grows with fleet size, so a big fleet reads as a bigger "planet"
+    // with gunners further out, and a lone ship keeps them close in.
+    return 30 + Math.sqrt(Math.max(1, player.ships.length)) * 13;
+}
+
+/* ---- Mouse tracking, used for local-player gunner aim ---- */
+let mouseScreen = { x: 0, y: 0 };
+let mouseWorld = { x: 0, y: 0 };
+function updateMouseWorld() {
+    mouseWorld.x = mouseScreen.x - (canvas.width / 2 - camera.x);
+    mouseWorld.y = mouseScreen.y - (canvas.height / 2 - camera.y);
+}
+
+/* ---- Post-death free-fly spectate camera ---- */
+let spectateActive = false;
+let spectateZoom = 1;
+let renderZoom = 1; // unified zoom applied to the world render transform — 1 outside spectate/multi-local-player situations
+const SPECTATE_PAN_SPEED = 480;     // world px/sec at zoom 1
+const SPECTATE_ZOOM_MIN = 0.45, SPECTATE_ZOOM_MAX = 2.4, SPECTATE_ZOOM_SPEED = 1.1;
 
 /* ---------------------- Online play (experimental, P2P via PeerJS) ---------------------- */
 const GLOBAL_LOBBY_ID = 'topdownspace-global-lobby-v1';
 const RECONFIGURE_COOLDOWN = 60000;
 let netRole = null; // null | 'host' | 'guest'
+
+// The single "this is me" player, for anything that needs to know which
+// fleet the local human controls (spectate camera, mouse-aimed gunners).
+// `isMe` is only ever set explicitly in the online global-lobby flow
+// (persistentMode); ordinary offline matches never set it, so fall back to
+// player 0 there — startGame() always makes index 0 the local human (it
+// gets myPilotName/myPilotColor and defaultControls[0]).
+function getLocalPlayer() {
+    const flagged = players.find(p => p.isMe);
+    if (flagged) return flagged;
+    if (!netRole) return players.find(p => !p.isBot) || null;
+    return null;
+}
+// All locally-controlled fleets — plural because local multiplayer (2-3
+// players sharing one keyboard, see showBotMenu) puts more than one human
+// seat on this same screen. Online (host/guest) always has exactly one.
+function getLocalPlayers() {
+    if (netRole) { const me = getLocalPlayer(); return me ? [me] : []; }
+    return players.filter(p => !p.isBot);
+}
 let persistentMode = false; // true only in the online global lobby: die -> respawn, no victory condition
 let peer = null;
 let hostConn = null;       // guest's connection to the host
@@ -1625,7 +1964,7 @@ function enterGlobalLobby() {
                 keys: defaultControls[0],
                 bullets: [], alive: true, formation: 'spiral',
                 lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-                isBot: false, difficulty: 'player', traitColor: myPilotColor,
+                isBot: false, difficulty: 'player', traitColor: myPilotColor, hullId: myPilotHull,
                 name: myPilotName, lastMessageTime: 0, lives: 1,
                 quarter: null, netId: 'local', isMe: true
             });
@@ -1691,7 +2030,7 @@ function handleHostMessage(conn, msg) {
                 keys: netControlsFor(gc.id),
                 bullets: [], alive: true, formation: 'spiral',
                 lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-                isBot: false, difficulty: 'player', traitColor: gc.color || '#2fe0ff',
+                isBot: false, difficulty: 'player', traitColor: gc.color || '#2fe0ff', hullId: gc.hullId || randomHullId(),
                 name: gc.name || 'Guest', lastMessageTime: 0, lives: 1,
                 quarter: null, netId: gc.id
             });
@@ -1808,7 +2147,8 @@ function buildSnapshot() {
         gameState, countdownValue, persistentMode, matchStartTime, modules,
         players: players.map(p => ({
             netId: p.netId || null, name: p.name, isBot: p.isBot, alive: p.alive,
-            traitColor: p.traitColor, formation: p.formation, lives: p.lives,
+            traitColor: p.traitColor, hullId: p.hullId, formation: p.formation, lives: p.lives,
+            team: p.team, isKing: p.isKing, kingCommand: p.kingCommand,
             ships: p.ships.map(s => ({ x: s.x, y: s.y, angle: s.angle, hp: s.hp, maxHp: s.maxHp, speed: s.speed, lastHit: s.lastHit })),
             bullets: p.bullets.map(b => ({ x: b.x, y: b.y, size: b.size }))
         })),
@@ -1869,12 +2209,14 @@ function applyNetSnapshot(data) {
                     ships: pd.ships.map(s => ({ x: s.x, y: s.y, angle: s.angle, hp: s.hp, maxHp: s.maxHp, speed: s.speed, dx: 0, dy: 0, lastHit: s.lastHit })),
                     bullets: [], keys: NET_CONTROLS, alive: pd.alive, formation: pd.formation,
                     lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-                    isBot: false, difficulty: 'player', traitColor: pd.traitColor,
+                    isBot: false, difficulty: 'player', traitColor: pd.traitColor, hullId: pd.hullId,
+                    team: pd.team, isKing: pd.isKing, kingCommand: pd.kingCommand,
                     name: pd.name, lastMessageTime: 0, lives: pd.lives,
                     quarter: null, netId: pd.netId, isMe: true
                 };
             } else {
                 reconcileMyPlayer(myPlayer, pd);
+                myPlayer.team = pd.team; myPlayer.isKing = pd.isKing; myPlayer.kingCommand = pd.kingCommand;
             }
             newPlayers.push(myPlayer);
         } else {
@@ -1883,7 +2225,8 @@ function applyNetSnapshot(data) {
                 bullets: pd.bullets.map(b => ({ x: b.x, y: b.y, size: b.size, color: pd.traitColor })),
                 keys: {}, alive: pd.alive, formation: pd.formation,
                 lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-                isBot: pd.isBot, difficulty: 'player', traitColor: pd.traitColor,
+                isBot: pd.isBot, difficulty: 'player', traitColor: pd.traitColor, hullId: pd.hullId,
+                team: pd.team, isKing: pd.isKing, kingCommand: pd.kingCommand,
                 name: pd.name, lastMessageTime: 0, lives: pd.lives,
                 quarter: null, netId: pd.netId, isMe: false
             });
@@ -1915,6 +2258,7 @@ const keys = {};
 const damageDisplays = [];
 const formationDisplays = [];
 const powerUpDisplays = [];
+const speechBubbles = []; // one comic-style bubble per active speaker
 let chatLog = [];
 const CHAT_LOG_MAX = 60;
 let selectedDifficulty = null;
@@ -1980,6 +2324,9 @@ const MODULE_DEFS = [
     { id: 'magnetPowerups', group: 'Fleet & Combat', label: 'Power Magnet',
       desc: 'Power-ups drift toward nearby ships.',
       detail: 'Any power-up within about 160 units of a ship gently drifts toward it instead of sitting still, making pickups slightly more forgiving to grab and slightly harder to deny by flying past at a distance. Multiple nearby fleets contesting the same power-up each pull it toward themselves, so contested power-ups feel noticeably more chaotic and reactive.' },
+    { id: 'gunners', group: 'Fleet & Combat', label: 'Mini-Gunners',
+      desc: 'A rare power-up grants orbiting escort turrets.',
+      detail: 'Adds a new, uncommon power-up (a violet square, spawning independently at roughly 1/1.5x the rate of normal power-ups) that grants an orbiting mini-gunner — up to 6 per fleet. Gunners orbit your lead ship at a radius that scales with fleet size, and fire on their own cooldown. In a straight 1-on-1 duel your gunners aim wherever your mouse points, adding a genuine aiming skill on top of piloting; with three or more fleets still alive they switch to auto-targeting the nearest enemy instead, since tracking a cursor while several threats are converging stops being fun and starts being a chore. Every bot\u2019s gunners always auto-target.' },
     { id: 'driftMode', group: 'Fleet & Combat', label: 'Zero-G Drift',
       desc: 'Removes automatic deceleration — true momentum flight.',
       detail: 'Normally your lead ship coasts to a stop when you release the throttle. Under Zero-G Drift, it doesn\u2019t — you keep your current velocity indefinitely unless you actively burn the reverse-thrust key to slow down, exactly like a real inertial spacecraft. Turning only changes your facing (and future thrust direction), not your current motion, so momentum and facing can point in completely different directions. A much higher skill ceiling for movement — worth trying against a lower bot difficulty first.' },
@@ -2022,10 +2369,19 @@ const MODULE_DEFS = [
       detail: 'Splits the arena into four quarters at the start, with each player assigned to one. Invisible barriers keep you inside your quarter as long as more than one fleet remains alive there; once your quarter is down to a single surviving fleet, its barrier opens, gradually funneling everyone toward a final confrontation instead of an all-at-once brawl from the first second.' },
     { id: 'massiveMap', group: 'Rule-Changers', label: 'Massive Map',
       desc: 'A 3\u00d7-sized arena — the camera follows you instead of showing it all at once.',
-      detail: 'Expands the arena to roughly nine times its normal area and switches the camera to follow your lead ship, slither.io-style, instead of showing the whole map at once. Asteroids, obstacles, and hazards scale up to match the extra space, so density stays similar even though there\u2019s far more room to maneuver. The tactical radar switches to a local view centered on you rather than the full map, since the whole arena no longer fits on one small dial. If more than one human is playing, the camera follows Pilot 1. Bots don\u2019t need the camera and are completely unaffected by it — expect fights to spread out and hunts to take longer.' },
+      detail: 'Expands the arena to roughly nine times its normal area and switches the camera to follow your lead ship, slither.io-style, instead of showing the whole map at once. Asteroids, obstacles, and hazards scale up to match the extra space, so density stays similar even though there\u2019s far more room to maneuver. The tactical radar switches to a local view centered on you rather than the full map, since the whole arena no longer fits on one small dial. If more than one local human is playing, the camera centers on the group and zooms out just enough to keep everyone in frame together. Bots don\u2019t need the camera and are completely unaffected by it — expect fights to spread out and hunts to take longer.' },
     { id: 'battleRoyale', group: 'Rule-Changers', label: 'Battle Royale',
       desc: 'A shrinking safe zone forces the fight inward, or take steady damage outside it.',
-      detail: 'The arena expands to a large map with the camera following you, exactly like Massive Map, and a glowing safe-zone boundary is drawn around a circle covering the whole arena. Every so often that circle shrinks toward the center, and any ship caught outside it takes steady periodic damage until it gets back in. Late in a match, the shrinking zone leaves nowhere to hide, forcing the last few fleets into a final confrontation instead of an endless standoff. Combine it with hazard modules like Asteroid fields or Gravity Wells for a genuinely brutal endgame. Even without this module selected, every match automatically activates the shrinking safe zone (without the map expansion) once 5 minutes have elapsed, so no match runs forever.' }
+      detail: 'The arena expands to a large map with the camera following you, exactly like Massive Map, and a glowing safe-zone boundary is drawn around a circle covering the whole arena. Every so often that circle shrinks toward the center, and any ship caught outside it takes steady periodic damage until it gets back in. Late in a match, the shrinking zone leaves nowhere to hide, forcing the last few fleets into a final confrontation instead of an endless standoff. Combine it with hazard modules like Asteroid fields or Gravity Wells for a genuinely brutal endgame. Even without this module selected, every match automatically activates the shrinking safe zone (without the map expansion) once 5 minutes have elapsed, so no match runs forever.' },
+    { id: 'teamDeathmatch', group: 'Rule-Changers', label: 'Team Deathmatch',
+      desc: 'Splits every fleet into two sides — last team standing wins.',
+      detail: 'Every player and bot is split into two teams (alternating seat order, so with one human and an even bot count you\u2019ll usually end up an even fight). Friendly fire is off — bullets and collisions pass harmlessly between teammates — and the match ends the instant only one team has anyone left alive, not just one player. Bots get real squad behavior for this: when nobody\u2019s actively fighting they drift back toward their team instead of wandering off alone, and when several teammates converge on the same enemy they fan out into a rough pincer instead of stacking on the exact same approach line.' },
+    { id: 'kingMode', group: 'Rule-Changers', label: 'Protect the King',
+      desc: 'You\u2019re the king — lose your fleet and your whole team is out.',
+      detail: 'Splits both teams like Team Deathmatch, but each team designates a king — you\u2019re always your team\u2019s king, and the first enemy bot fills that role for theirs. A team is eliminated the instant its king\u2019s fleet is destroyed, even if escorts are still alive, so protecting that one fleet matters more than raw numbers. Escort bots prioritize any enemy who gets within range of their king over whatever else they\u2019re doing. As king, press 1 to call Regroup (escorts fall back to you), 2 for Scatter (spread out), 3 for Defend (hold a perimeter), or 4 to push the escort toward the enemy king. Arrows at the edge of the screen point toward both kings whenever they\u2019re off-screen.' },
+    { id: 'creatorsEdition', group: 'Rule-Changers', label: 'Creators Edition',
+      desc: 'A slower, larger, more forgiving take on the whole game.',
+      detail: 'A bundle of changes aimed straight at the most common feedback: aiming felt too twitchy and fights ended too fast. The arena is noticeably larger and ships are slower and steadier to fly, so engagements start at range and closing the distance is a real decision rather than a reflex. Bullets are more forgiving to land, ships have more effective HP, and hits deal less relative damage, so a single good pass doesn\u2019t end a fight outright \u2014 skillful positioning and sustained pressure matter more than who clicked first. This is Claude\u2019s own opinionated take on what makes the game more fun; if it\u2019s not for you, it\u2019s just a toggle.' }
 ];
 
 const MODULE_GROUPS = ['Hazards', 'Fleet & Combat', 'Visual & Performance', 'Rule-Changers'];
@@ -2106,6 +2462,10 @@ const ICONS = {
     shieldRegen: svgIcon('<path d="M12 2.5l7.5 3.6v5.4c0 4.8-3.2 8-7.5 9.5-4.3-1.5-7.5-4.7-7.5-9.5V6.1z"></path><path d="M12 8v7M8.5 11.5h7"></path>'),
     criticalHits: svgIcon('<path d="M12 2l2.4 6.1L21 10l-6.1 2.4L12 19l-2.4-6.1L3 10l6.1-2.1z"></path>'),
     magnetPowerups: svgIcon('<path d="M7 3.5v8a5 5 0 0 0 10 0v-8"></path><path d="M7 3.5H2.7M17 3.5h4.3M7 9H2.7M17 9h4.3"></path>'),
+    gunners: svgIcon('<rect x="9" y="9" width="6" height="6" rx="1"></rect><circle cx="12" cy="12" r="9" opacity="0.35" fill="none"></circle>'),
+    teamDeathmatch: svgIcon('<circle cx="8" cy="12" r="4"></circle><circle cx="16" cy="12" r="4" opacity="0.4"></circle>'),
+    kingMode: svgIcon('<path d="M3 18h18l-1.5-8-4 3-3.5-6-3.5 6-4-3z"></path>'),
+    creatorsEdition: svgIcon('<path d="M12 2v20M2 12h20" opacity="0.4"></path><circle cx="12" cy="12" r="6"></circle>'),
     driftMode: svgIcon('<path d="M2.5 12h5M2 8h3.5M2 16h3.5"></path><path d="M12 3l7 18-7-4-7 4z"></path>'),
     burstFire: svgIcon('<circle cx="4" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="11" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><circle cx="18" cy="12" r="1.6" fill="currentColor" stroke="none"></circle><path d="M2 6l20 0" opacity="0"></path>'),
     homingShots: svgIcon('<circle cx="17" cy="7" r="2.2"></circle><path d="M3 20C6 12 10 9 15 8.2"></path><path d="M12.5 8.8l2.5-1 .3 2.7"></path>'),
@@ -2160,7 +2520,7 @@ function makeOsc(type, freq) {
 }
 let soundVolMult = 1;
 function proximityVolume(x, y) {
-    if (!modules.massiveMap && !modules.battleRoyale) return 1;
+    if (!modules.massiveMap && !modules.battleRoyale && !modules.creatorsEdition) return 1;
     const me = players.find(p => p.isMe) || players.find(p => !p.isBot && p.alive && p.ships.length);
     if (!me || !me.ships.length) return 1;
     const dist = Math.hypot(me.ships[0].x - x, me.ships[0].y - y);
@@ -2411,12 +2771,15 @@ function renderThemeGrid() {
 const PILOT_COLOR_PRESETS = ['#2fe0ff', '#ff4d6d', '#3de8a5', '#ffb545', '#9a6bff', '#ff6b4d', '#4d9fff', '#ffd166', '#b56bff', '#39ff9d'];
 let myPilotName = 'Pilot';
 let myPilotColor = PILOT_COLOR_PRESETS[0];
+let myPilotHull = 'arrow';
 (function loadPilotIdentity() {
     try {
         const n = localStorage.getItem('pilotName');
         const c = localStorage.getItem('pilotColor');
+        const h = localStorage.getItem('pilotHull');
         if (n) myPilotName = n.slice(0, 16);
         if (c) myPilotColor = c;
+        if (h && HULL_SHAPES[h]) myPilotHull = h;
     } catch (e) {}
 })();
 function openCustomize() {
@@ -2428,6 +2791,40 @@ function openCustomize() {
         try { localStorage.setItem('pilotName', myPilotName); } catch (e) {}
     };
     renderCustomizeSwatches();
+    renderCustomizeHulls();
+    updateCustomizePreview();
+}
+// Builds an SVG path string for a hull shape by feeding the same HULL_SHAPES
+// drawing functions used in-game a fake ctx that just records the points —
+// one shape definition, both a canvas render and an SVG preview icon.
+function hullSvgPath(hullId, size, cx, cy) {
+    size = size || 9; cx = cx === undefined ? 12 : cx; cy = cy === undefined ? 12 : cy;
+    const parts = [];
+    const recorder = {
+        moveTo(x, y) { parts.push('M' + (cx + x).toFixed(2) + ',' + (cy + y).toFixed(2)); },
+        lineTo(x, y) { parts.push('L' + (cx + x).toFixed(2) + ',' + (cy + y).toFixed(2)); },
+        closePath() { parts.push('Z'); }
+    };
+    hullPath(recorder, size, hullId);
+    return parts.join(' ');
+}
+function renderCustomizeHulls() {
+    const el = document.getElementById('hullGrid');
+    if (!el) return;
+    el.innerHTML = HULL_IDS.map(id =>
+        '<div class="theme-card' + (id === myPilotHull ? ' active' : '') + '" onclick="selectPilotHull(\'' + id + '\')">' +
+            '<svg viewBox="0 0 24 24" class="theme-swatch" style="width:100%;height:26px;">' +
+                '<path d="' + hullSvgPath(id) + '" fill="' + (id === myPilotHull ? 'var(--gold)' : myPilotColor) + '"></path>' +
+            '</svg>' +
+            '<div class="theme-label">' + HULL_LABELS[id] + '</div>' +
+        '</div>'
+    ).join('');
+}
+function selectPilotHull(id) {
+    if (!HULL_SHAPES[id]) return;
+    myPilotHull = id;
+    try { localStorage.setItem('pilotHull', id); } catch (e) {}
+    renderCustomizeHulls();
     updateCustomizePreview();
 }
 function renderCustomizeSwatches() {
@@ -2446,6 +2843,7 @@ function selectPilotColor(hex) {
     myPilotColor = hex;
     try { localStorage.setItem('pilotColor', hex); } catch (e) {}
     renderCustomizeSwatches();
+    renderCustomizeHulls();
     updateCustomizePreview();
 }
 function updateCustomizePreview() {
@@ -2453,11 +2851,122 @@ function updateCustomizePreview() {
     if (!preview) return;
     preview.style.color = myPilotColor;
     const path = preview.querySelector('path');
-    if (path) path.setAttribute('fill', myPilotColor);
+    if (path) {
+        path.setAttribute('fill', myPilotColor);
+        path.setAttribute('d', hullSvgPath(myPilotHull, 10));
+    }
 }
 
-function openSettings() { settingsModal.classList.add('active'); renderThemeGrid(); }
-function closeSettings() { settingsModal.classList.remove('active'); }
+function openSettings() {
+    settingsModal.classList.add('active');
+    renderThemeGrid();
+    renderKeybindList();
+    syncAudioUI();
+}
+function closeSettings() { settingsModal.classList.remove('active'); cancelRebind(); }
+
+function switchSettingsTab(tab) {
+    document.querySelectorAll('.settings-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.querySelectorAll('.settings-panel').forEach(el => el.classList.toggle('active', el.id === 'settingsPanel-' + tab));
+    if (tab !== 'controls') cancelRebind();
+}
+
+/* ---------------------- Keybind rebinding ---------------------- */
+const KEYBIND_ACTIONS = [
+    { id: 'up', label: 'Thrust Forward' },
+    { id: 'down', label: 'Brake / Reverse' },
+    { id: 'left', label: 'Turn Left' },
+    { id: 'right', label: 'Turn Right' },
+    { id: 'form', label: 'Cycle Formation' },
+    { id: 'dash', label: 'Dash' }
+];
+let rebindingAction = null;
+
+function keyDisplayName(k) {
+    if (k === ' ') return 'Space';
+    if (k.length === 1) return k.toUpperCase();
+    return k;
+}
+function renderKeybindList() {
+    const list = document.getElementById('keybindList');
+    if (!list) return;
+    list.innerHTML = KEYBIND_ACTIONS.map(a =>
+        '<div class="keybind-row">' +
+            '<span class="keybind-label">' + a.label + '</span>' +
+            '<span class="keybind-key' + (rebindingAction === a.id ? ' listening' : '') + '" data-action="' + a.id + '" onclick="startRebind(\'' + a.id + '\')">' +
+                (rebindingAction === a.id ? 'Press a key…' : keyDisplayName(defaultControls[0][a.id])) +
+            '</span>' +
+        '</div>'
+    ).join('');
+}
+function startRebind(actionId) {
+    rebindingAction = actionId;
+    renderKeybindList();
+    const hint = document.getElementById('rebindHint');
+    if (hint) { hint.style.display = 'block'; hint.textContent = 'Press any key to bind, or Escape to cancel.'; }
+}
+function cancelRebind() {
+    rebindingAction = null;
+    const hint = document.getElementById('rebindHint');
+    if (hint) hint.style.display = 'none';
+    renderKeybindList();
+}
+function resetControls() {
+    Object.assign(defaultControls[0], { up: 'w', down: 's', left: 'a', right: 'd', form: 'e', dash: 'q' });
+    saveControls();
+    cancelRebind();
+}
+function saveControls() {
+    try { localStorage.setItem('tds_controls_p1', JSON.stringify(defaultControls[0])); } catch (e) {}
+}
+function loadControls() {
+    try {
+        const raw = localStorage.getItem('tds_controls_p1');
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        KEYBIND_ACTIONS.forEach(a => { if (saved[a.id]) defaultControls[0][a.id] = saved[a.id]; });
+    } catch (e) {}
+}
+
+/* ---------------------- Audio settings ---------------------- */
+let audioMuted = false;
+let audioVolume = 0.85;
+function applyAudioSettings() {
+    masterGain.gain.value = audioMuted ? 0 : audioVolume;
+}
+function toggleMute() {
+    audioMuted = !audioMuted;
+    applyAudioSettings();
+    saveAudioSettings();
+    syncAudioUI();
+}
+function setVolume(val) {
+    audioVolume = Math.max(0, Math.min(100, Number(val))) / 100;
+    applyAudioSettings();
+    saveAudioSettings();
+    const valEl = document.getElementById('volumeValue');
+    if (valEl) valEl.textContent = Math.round(audioVolume * 100) + '%';
+}
+function syncAudioUI() {
+    const row = document.getElementById('muteRow');
+    const slider = document.getElementById('volumeSlider');
+    const valEl = document.getElementById('volumeValue');
+    if (row) row.classList.toggle('on', audioMuted);
+    if (slider) slider.value = Math.round(audioVolume * 100);
+    if (valEl) valEl.textContent = Math.round(audioVolume * 100) + '%';
+}
+function saveAudioSettings() {
+    try { localStorage.setItem('tds_audio', JSON.stringify({ muted: audioMuted, volume: audioVolume })); } catch (e) {}
+}
+function loadAudioSettings() {
+    try {
+        const raw = localStorage.getItem('tds_audio');
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (typeof saved.muted === 'boolean') audioMuted = saved.muted;
+        if (typeof saved.volume === 'number') audioVolume = Math.max(0, Math.min(1, saved.volume));
+    } catch (e) {}
+}
 
 let isNewTabMode = false;
 function toggleNewTab() {
@@ -2620,8 +3129,11 @@ function renderDocFormations() {
 
 /* ---------------------- 6. Game setup ---------------------- */
 function shipHP(tier) {
-    if (tier === 'small') return modules.oneShot ? 1 : (modules.doubleHealth ? 600 : 300);
-    return modules.oneShot ? 1 : (modules.doubleHealth ? 2000 : 1000);
+    if (modules.oneShot) return 1;
+    let base = tier === 'small' ? 300 : 1000;
+    if (modules.doubleHealth) base *= 2;
+    if (modules.creatorsEdition) base *= 1.4; // more effective HP, on top of the reduced-damage multiplier above
+    return Math.round(base);
 }
 function makeShip(x, y, angle, tier) {
     const hp = shipHP(tier || 'full');
@@ -2663,7 +3175,7 @@ function initMenuBots() {
             alive: true,
             formation: 'spiral',
             lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-            isBot: true, difficulty: 'standard', style, traitColor: pickBotColor(style),
+            isBot: true, difficulty: 'standard', style, traitColor: pickBotColor(style), hullId: randomHullId(),
             name: pickBotName(style, usedNames),
             lastMessageTime: 0, botState: 'patrolling', target: null, lastDecision: 0
         });
@@ -2680,10 +3192,13 @@ function startGame(bots, withModules) {
     lastLaunch = { bots, withModules };
 
     MAX_SHIPS_PER_PLAYER = modules.maxShips1000 ? 1000 : 100;
+    applySpeedTuning();
     MAX_ASTEROIDS = modules.noAsteroids ? 0 : (modules.doubleAsteroids ? 30 : 15);
-    if ((modules.massiveMap || modules.battleRoyale) && !modules.noAsteroids) MAX_ASTEROIDS = Math.round(MAX_ASTEROIDS * 4.5);
-    WORLD_WIDTH = (modules.massiveMap || modules.battleRoyale) ? canvas.width * 3 : canvas.width;
-    WORLD_HEIGHT = (modules.massiveMap || modules.battleRoyale) ? canvas.height * 3 : canvas.height;
+    if ((modules.massiveMap || modules.battleRoyale || modules.creatorsEdition) && !modules.noAsteroids) MAX_ASTEROIDS = Math.round(MAX_ASTEROIDS * 4.5);
+    const expandedWorld = modules.massiveMap || modules.battleRoyale || modules.creatorsEdition;
+    const creatorsExtra = modules.creatorsEdition ? 1.6 : 1; // Creators Edition wants a noticeably bigger, slower-paced arena on top of the usual expansion
+    WORLD_WIDTH = expandedWorld ? canvas.width * 3 * creatorsExtra : canvas.width;
+    WORLD_HEIGHT = expandedWorld ? canvas.height * 3 * creatorsExtra : canvas.height;
     zone.active = !!modules.battleRoyale;
     zone.x = WORLD_WIDTH / 2;
     zone.y = WORLD_HEIGHT / 2;
@@ -2705,10 +3220,18 @@ function startGame(bots, withModules) {
     eliminations = [];
 
     const positions = [];
-    const getSafePosition = (quarter) => {
+    const getSafePosition = (quarter, team) => {
         let x, y;
         do {
-            if (modules.separation) {
+            if (team === 0 || team === 1) {
+                // Team modes: cluster spawns into each team's half of the
+                // map (with a buffer around the dividing line) so a team
+                // actually starts a match together instead of scattered
+                // randomly among the enemy.
+                if (team === 0) x = rand(WORLD_WIDTH * 0.08, WORLD_WIDTH * 0.42);
+                else x = rand(WORLD_WIDTH * 0.58, WORLD_WIDTH * 0.92);
+                y = rand(WORLD_HEIGHT * 0.1, WORLD_HEIGHT * 0.9);
+            } else if (modules.separation) {
                 if (quarter === 0) { x = rand(0, WORLD_WIDTH / 2); y = rand(0, WORLD_HEIGHT / 2); }
                 else if (quarter === 1) { x = rand(WORLD_WIDTH / 2, WORLD_WIDTH); y = rand(0, WORLD_HEIGHT / 2); }
                 else if (quarter === 2) { x = rand(0, WORLD_WIDTH / 2); y = rand(WORLD_HEIGHT / 2, WORLD_HEIGHT); }
@@ -2722,9 +3245,17 @@ function startGame(bots, withModules) {
         return { x, y };
     };
 
+    const teamModeOn = modules.teamDeathmatch || modules.kingMode;
+    const TEAM_COLORS = ['#3d9bff', '#ff4757']; // team 0 = Blue, team 1 = Red
     for (let i = 0; i < playerCount; i++) {
-        const pos = getSafePosition(i % 4);
-        const traitColor = i === 0 ? myPilotColor : ['#ff4d6d', '#2fe0ff', '#3de8a5'][i % 3];
+        const team = teamModeOn ? i % 2 : undefined;
+        const pos = getSafePosition(i % 4, team);
+        // Team modes lock everyone into their team's color (with a small
+        // per-seat shade variance so overlapping ships aren't perfectly
+        // identical) so "who's on my side" reads instantly; hull shape and
+        // name still make each ship individually identifiable.
+        const traitColor = teamModeOn ? shadeColor(TEAM_COLORS[team], (i % 3) * 8 - 8)
+            : (i === 0 ? myPilotColor : ['#ff4d6d', '#2fe0ff', '#3de8a5'][i % 3]);
         players.push({
             ships: [makeShip(pos.x, pos.y, 0, 'full')],
             keys: defaultControls[i % 3],
@@ -2732,19 +3263,22 @@ function startGame(bots, withModules) {
             alive: true,
             formation: modules.romansExpansion ? 'romansRectangle' : 'spiral',
             lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-            isBot: false, difficulty: 'player', traitColor,
+            isBot: false, difficulty: 'player', traitColor, hullId: i === 0 ? myPilotHull : randomHullId(),
             name: i === 0 ? myPilotName : ('Pilot ' + (i + 1)),
             lastMessageTime: 0,
             lives: modules.threeLives ? 3 : 1,
-            quarter: modules.separation ? i % 4 : null
+            quarter: modules.separation ? i % 4 : null,
+            team
         });
     }
 
     const botStyles = ['aggressive', 'defensive', 'dashy', 'formation'];
     const usedBotNames = new Set();
     for (let i = 0; i < botCount; i++) {
-        const pos = getSafePosition(i % 4);
+        const team = teamModeOn ? (playerCount + i) % 2 : undefined;
+        const pos = getSafePosition(i % 4, team);
         const style = botStyles[Math.floor(Math.random() * botStyles.length)];
+        const traitColor = teamModeOn ? shadeColor(TEAM_COLORS[team], ((playerCount + i) % 3) * 8 - 8) : pickBotColor(style);
         players.push({
             ships: [makeShip(pos.x, pos.y, 0, 'full')],
             keys: { up: '', down: '', left: '', right: '', form: '', dash: '' },
@@ -2752,17 +3286,42 @@ function startGame(bots, withModules) {
             alive: true,
             formation: modules.romansExpansion ? 'romansRectangle' : 'spiral',
             lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-            isBot: true, difficulty: selectedDifficulty || 'standard', style, traitColor: pickBotColor(style),
+            isBot: true, difficulty: selectedDifficulty || 'standard', style, traitColor, hullId: randomHullId(),
             name: pickBotName(style, usedBotNames),
             lastMessageTime: 0, botState: 'patrolling', target: null, lastDecision: 0,
             lives: modules.threeLives ? 3 : 1,
-            quarter: modules.separation ? i % 4 : null
+            quarter: modules.separation ? i % 4 : null,
+            team
         });
     }
 
     frameCount = 0;
     chaosTimer = 0;
     canvas.style.imageRendering = modules.pixelMode ? 'pixelated' : 'optimizeSpeed';
+
+    if (modules.teamDeathmatch || modules.kingMode) {
+        if (modules.kingMode) {
+            // First player encountered per team is that team's king — since
+            // the local human is always players[0], you're the king of your
+            // own team by default, exactly like the enemy team's own first
+            // bot becomes theirs.
+            const kingByTeam = {};
+            let escortCounter = {};
+            players.forEach(p => {
+                if (kingByTeam[p.team] === undefined) {
+                    kingByTeam[p.team] = p;
+                    p.isKing = true;
+                    p.kingCommand = null;
+                } else {
+                    p.isKing = false;
+                    p.escortsKing = kingByTeam[p.team];
+                    escortCounter[p.team] = (escortCounter[p.team] || 0) + 1;
+                    p.escortSlot = escortCounter[p.team];
+                }
+            });
+        }
+    }
+
     renderLineup();
     activateScreen(lineupScreen);
     if (netRole === 'host') broadcastLineup();
@@ -2790,6 +3349,16 @@ function deployMatch() {
     spawnAsteroids();
 
     pushSystemChat('COUNTDOWN INITIATED — ' + players.length + ' FLEET' + (players.length === 1 ? '' : 'S') + ' DETECTED');
+    if (modules.kingMode) {
+        const me = getLocalPlayer();
+        if (me && me.isKing) {
+            pushSystemChat('YOU ARE THE KING — your fleet dying ends the match for your whole team. Escorts will guard you automatically. Press 1 REGROUP, 2 SCATTER, 3 DEFEND, 4 ATTACK to command them. Watch the edge of the screen: a cyan arrow points to your own king, a red arrow points to the enemy king.');
+        } else if (me) {
+            pushSystemChat('YOUR KING IS ' + (players.find(p => p.isKing && p.team === me.team) || {}).name + ' — protect them at all costs, their fleet dying ends the match for your team.');
+        }
+    } else if (modules.teamDeathmatch) {
+        pushSystemChat('TEAM DEATHMATCH — eliminate every fleet on the other team. Friendly fire is off.');
+    }
     if (players.length <= 12) players.forEach(p => { if (p.isBot) showBotMessage(p, 'intro'); });
     if (netRole === 'host') broadcastDeploy();
 }
@@ -2800,6 +3369,17 @@ function restartGame() {
     victoryScreen.classList.remove('active');
     lineupScreen.classList.remove('active');
     countdownLabel.style.display = 'none';
+    resetZoneWarning();
+    spectateActive = false;
+    spectateZoom = 1;
+    renderZoom = 1;
+    if (spectateLabel) spectateLabel.classList.remove('active');
+    if (kingArrowOwn) kingArrowOwn.classList.remove('active');
+    if (kingArrowEnemy) kingArrowEnemy.classList.remove('active');
+    if (kingCommandLegend) kingCommandLegend.classList.remove('active');
+    if (kingCommandBanner) kingCommandBanner.classList.remove('show');
+    lastSeenKingCommand = {};
+    speechBubbles.length = 0;
     WORLD_WIDTH = canvas.width;
     WORLD_HEIGHT = canvas.height;
     activateScreen(menu);
@@ -2905,6 +3485,57 @@ function pickBotColor(style) {
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
+/* ---------------------- Ship/base hull shapes ---------------------- */
+const HULL_SHAPES = {
+    arrow: (ctx, size) => {
+        ctx.moveTo(size, 0);
+        ctx.lineTo(-size * 0.55, size * 0.62);
+        ctx.lineTo(-size * 0.32, 0);
+        ctx.lineTo(-size * 0.55, -size * 0.62);
+        ctx.closePath();
+    },
+    chevron: (ctx, size) => {
+        ctx.moveTo(size, 0);
+        ctx.lineTo(-size * 0.2, size * 0.85);
+        ctx.lineTo(-size * 0.65, size * 0.5);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(-size * 0.65, -size * 0.5);
+        ctx.lineTo(-size * 0.2, -size * 0.85);
+        ctx.closePath();
+    },
+    diamond: (ctx, size) => {
+        ctx.moveTo(size, 0);
+        ctx.lineTo(0, size * 0.62);
+        ctx.lineTo(-size * 0.75, 0);
+        ctx.lineTo(0, -size * 0.62);
+        ctx.closePath();
+    },
+    hex: (ctx, size) => {
+        ctx.moveTo(size, 0);
+        ctx.lineTo(size * 0.32, size * 0.58);
+        ctx.lineTo(-size * 0.5, size * 0.5);
+        ctx.lineTo(-size * 0.72, 0);
+        ctx.lineTo(-size * 0.5, -size * 0.5);
+        ctx.lineTo(size * 0.32, -size * 0.58);
+        ctx.closePath();
+    },
+    stealth: (ctx, size) => {
+        ctx.moveTo(size, 0);
+        ctx.lineTo(-size * 0.15, size * 0.75);
+        ctx.lineTo(-size * 0.4, size * 0.2);
+        ctx.lineTo(-size * 0.85, size * 0.15);
+        ctx.lineTo(-size * 0.55, 0);
+        ctx.lineTo(-size * 0.85, -size * 0.15);
+        ctx.lineTo(-size * 0.4, -size * 0.2);
+        ctx.lineTo(-size * 0.15, -size * 0.75);
+        ctx.closePath();
+    }
+};
+const HULL_IDS = ['arrow', 'chevron', 'diamond', 'hex', 'stealth'];
+const HULL_LABELS = { arrow: 'Arrow', chevron: 'Chevron', diamond: 'Diamond', hex: 'Hexcraft', stealth: 'Stealth Wing' };
+function randomHullId() { return HULL_IDS[Math.floor(Math.random() * HULL_IDS.length)]; }
+function hullPath(ctx, size, hullId) { (HULL_SHAPES[hullId] || HULL_SHAPES.arrow)(ctx, size); }
+
 function drawShip(ship, totalEntities, isLead, isPlayer, player) {
     if (modules.stealthMode && Date.now() - player.lastShot > 2000) return;
     const tier = perfTier();
@@ -2941,11 +3572,7 @@ function drawShip(ship, totalEntities, isLead, isPlayer, player) {
     }
 
     ctx.beginPath();
-    ctx.moveTo(size, 0);
-    ctx.lineTo(-size * 0.55, size * 0.62);
-    ctx.lineTo(-size * 0.32, 0);
-    ctx.lineTo(-size * 0.55, -size * 0.62);
-    ctx.closePath();
+    hullPath(ctx, size, player.hullId);
     if (tier === 'high') {
         const hullGrad = ctx.createLinearGradient(-size, 0, size, 0);
         hullGrad.addColorStop(0, shadeColor(player.traitColor, -35));
@@ -3011,6 +3638,22 @@ function drawShip(ship, totalEntities, isLead, isPlayer, player) {
             ctx.fillText('YOU', ship.x, markerY - 3);
         }
     }
+
+    if (isLead && player.isKing && tier !== 'low') {
+        // A crown hovering over the king's lead ship — the single most
+        // important thing to be able to spot at a glance in this mode.
+        const crownBob = Math.sin(Date.now() / 260) * 1.4;
+        const cy = ship.y - size - (isPlayer && !player.isBot ? 26 : 12) + crownBob;
+        ctx.save();
+        ctx.translate(ship.x, cy);
+        ctx.shadowColor = 'rgba(255,209,102,0.9)'; ctx.shadowBlur = 7;
+        ctx.fillStyle = '#ffd166';
+        ctx.beginPath();
+        ctx.moveTo(-6, 3); ctx.lineTo(-6, -1); ctx.lineTo(-3, 1.5); ctx.lineTo(0, -3);
+        ctx.lineTo(3, 1.5); ctx.lineTo(6, -1); ctx.lineTo(6, 3); ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
 }
 
 function drawBullets(player) {
@@ -3049,7 +3692,69 @@ function pushChat(entry) {
     if (netRole === 'host') broadcastToGuests({ t: 'chat', entry });
 }
 function pushSystemChat(text) { pushChat({ kind: 'system', text, time: Date.now() }); }
-function pushBotChat(player, text) { pushChat({ kind: 'chat', name: player.name, color: player.traitColor, text, time: Date.now() }); }
+const SPEECH_BUBBLE_DURATION = 3200;
+function pushBotChat(player, text) {
+    pushChat({ kind: 'chat', name: player.name, color: player.traitColor, text, time: Date.now() });
+    // Comic speech bubble alongside the chat log — one per speaker, so a
+    // chatty bot doesn't stack three bubbles over its own ship.
+    const existing = speechBubbles.findIndex(b => b.player === player);
+    if (existing !== -1) speechBubbles.splice(existing, 1);
+    speechBubbles.push({ player, text, time: Date.now() });
+    if (speechBubbles.length > 24) speechBubbles.shift();
+}
+function drawSpeechBubbles() {
+    const now = Date.now();
+    for (let i = speechBubbles.length - 1; i >= 0; i--) {
+        const b = speechBubbles[i];
+        const age = now - b.time;
+        if (age > SPEECH_BUBBLE_DURATION || !b.player.ships.length || !b.player.alive) { speechBubbles.splice(i, 1); continue; }
+        const ship = b.player.ships[0];
+        const fadeIn = clamp(age / 160, 0, 1);
+        const fadeOut = clamp((SPEECH_BUBBLE_DURATION - age) / 400, 0, 1);
+        const alpha = Math.min(fadeIn, fadeOut);
+        const pop = 1 + Math.max(0, 1 - fadeIn) * 0.4; // little pop-in scale
+        const text = b.text.length > 46 ? b.text.slice(0, 44) + '…' : b.text;
+
+        ctx.save();
+        ctx.font = (modules.smallMode ? '9px' : '10.5px') + ' Rajdhani, sans-serif';
+        const textW = ctx.measureText(text).width;
+        const padX = 9, padY = 6;
+        const bw = textW + padX * 2, bh = 20;
+        const bx = ship.x - bw / 2, by = ship.y - 46 - bh;
+
+        ctx.globalAlpha = alpha;
+        ctx.translate(ship.x, by + bh); ctx.scale(pop, pop); ctx.translate(-ship.x, -(by + bh));
+
+        // bubble body
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        ctx.strokeStyle = b.player.traitColor || '#2fe0ff';
+        ctx.lineWidth = 1.4;
+        const r = 7;
+        ctx.beginPath();
+        ctx.moveTo(bx + r, by);
+        ctx.lineTo(bx + bw - r, by);
+        ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+        ctx.lineTo(bx + bw, by + bh - r);
+        ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+        ctx.lineTo(bx + bw / 2 + 6, by + bh);
+        ctx.lineTo(ship.x, by + bh + 8); // tail pointing at the ship
+        ctx.lineTo(bx + bw / 2 - 6, by + bh);
+        ctx.lineTo(bx + r, by + bh);
+        ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+        ctx.lineTo(bx, by + r);
+        ctx.quadraticCurveTo(bx, by, bx + r, by);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#1a1520';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, ship.x, by + bh / 2 + 1);
+        ctx.textBaseline = 'alphabetic';
+        ctx.restore();
+    }
+}
 function renderChatLog() {
     if (!chatLogEl) return;
     chatLogEl.innerHTML = chatLog.map(e => {
@@ -3209,15 +3914,17 @@ function buildFleetCardElement(p) {
         const div = document.createElement('div');
         div.className = 'fleet-card' + (p.isBot ? '' : ' fleet-card-detailed');
         div.style.setProperty('--fc-color', p.traitColor || '#2fe0ff');
-        const safeName = (p.name || 'Pilot') + (p.isMe ? ' (you)' : '');
+        const safeName = (p.isKing ? '\u2655 ' : '') + (p.name || 'Pilot') + (p.isMe ? ' (you)' : '');
+        const teamTag = (modules.teamDeathmatch || modules.kingMode) && p.team !== undefined
+            ? '<span class="fc-team-tag" style="color:' + (p.team === 0 ? '#3d9bff' : '#ff4757') + '">' + (p.team === 0 ? 'BLUE' : 'RED') + '</span>' : '';
         if (p.isBot) {
             div.innerHTML =
-                '<div class="fc-row"><span class="fc-name">' + safeName + '</span><span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
+                '<div class="fc-row"><span class="fc-name">' + safeName + '</span>' + teamTag + '<span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
                 '<div class="fc-bar-track"><div class="fc-bar-fill" style="width:' + clamp(hpPercent, 0, 100) + '%"></div></div>' +
                 '<div class="fc-meta"><span>' + hpPercent.toFixed(0) + '% HP</span><span>' + (modules.threeLives ? 'Lives ' + p.lives : '') + '</span></div>';
         } else {
             div.innerHTML =
-                '<div class="fc-row"><span class="fc-name">' + safeName + '</span><span class="fc-ships">' + p.ships.length + ' ships' + (modules.threeLives ? ' \u00b7 Lives ' + p.lives : '') + '</span></div>' +
+                '<div class="fc-row"><span class="fc-name">' + safeName + '</span>' + teamTag + '<span class="fc-ships">' + p.ships.length + ' ships' + (modules.threeLives ? ' \u00b7 Lives ' + p.lives : '') + '</span></div>' +
                 buildShipGridHTML(p) +
                 '<div class="fc-avg">AVG HP <strong>' + hpPercent.toFixed(0) + '%</strong></div>';
         }
@@ -3246,11 +3953,12 @@ function isLowHealth(player, threshold) {
 }
 function findNearestEnemy(player) {
     let nearest = null, minDist = Infinity;
+    const teamMode = modules.teamDeathmatch || modules.kingMode;
     players.forEach(p => {
-        if (p !== player && p.alive && p.ships.length > 0) {
-            const dist = Math.hypot(p.ships[0].x - player.ships[0].x, p.ships[0].y - player.ships[0].y);
-            if (dist < minDist) { minDist = dist; nearest = p; }
-        }
+        if (p === player || !p.alive || p.ships.length === 0) return;
+        if (teamMode && p.team !== undefined && p.team === player.team) return;
+        const dist = Math.hypot(p.ships[0].x - player.ships[0].x, p.ships[0].y - player.ships[0].y);
+        if (dist < minDist) { minDist = dist; nearest = p; }
     });
     return { player: nearest, distance: minDist };
 }
@@ -3384,24 +4092,203 @@ function updateBattleZone(deltaTime) {
         }
     });
 }
+
+// Positions a screen-edge arrow pointing toward a world position when it's
+// off-camera, hides it once the position is actually on screen. Shared by
+// both king indicators (and reusable for anything similar later).
+function positionEdgeArrow(el, worldX, worldY) {
+    if (!el) return;
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const sx = (worldX - camera.x) * renderZoom + cx;
+    const sy = (worldY - camera.y) * renderZoom + cy;
+    const margin = 34;
+    const onScreen = sx > margin && sx < canvas.width - margin && sy > margin && sy < canvas.height - margin;
+    if (onScreen) { el.classList.remove('active'); return; }
+    const angle = Math.atan2(sy - cy, sx - cx);
+    const maxX = cx - margin, maxY = cy - margin;
+    const scale = Math.min(maxX / Math.max(1e-6, Math.abs(Math.cos(angle))), maxY / Math.max(1e-6, Math.abs(Math.sin(angle))));
+    const ex = cx + Math.cos(angle) * scale, ey = cy + Math.sin(angle) * scale;
+    el.style.left = ex + 'px'; el.style.top = ey + 'px';
+    el.style.transform = 'translate(-50%, -50%) rotate(' + (angle + Math.PI / 2) + 'rad)';
+    const label = el.querySelector('span');
+    if (label) label.style.transform = 'rotate(' + (-(angle + Math.PI / 2)) + 'rad)';
+    el.classList.add('active');
+}
+let lastSeenKingCommand = {};
+function showKingCommandBanner(command, isOwnTeam) {
+    if (!kingCommandBanner) return;
+    const labels = { regroup: 'REGROUP', scatter: 'SCATTER', defend: 'DEFEND', attack: 'ATTACK' };
+    kingCommandBanner.innerHTML = (labels[command] || command.toUpperCase()) + '<span>' + (isOwnTeam ? 'The king calls' : 'Enemy king calls') + '</span>';
+    kingCommandBanner.style.color = isOwnTeam ? 'var(--gold)' : 'var(--danger)';
+    kingCommandBanner.classList.remove('show');
+    void kingCommandBanner.offsetWidth;
+    kingCommandBanner.classList.add('show');
+}
+function updateKingArrows() {
+    if (!kingArrowOwn || !kingArrowEnemy) return;
+    if (!modules.kingMode || gameState !== 'playing') {
+        kingArrowOwn.classList.remove('active');
+        kingArrowEnemy.classList.remove('active');
+        if (kingCommandLegend) kingCommandLegend.classList.remove('active');
+        return;
+    }
+    const me = getLocalPlayer();
+    const myTeam = me ? me.team : undefined;
+    const ownKing = players.find(p => p.isKing && p.team === myTeam);
+    const enemyKing = players.find(p => p.isKing && p.team !== myTeam);
+    if (ownKing && ownKing.ships.length && !(me && me.isKing)) {
+        positionEdgeArrow(kingArrowOwn, ownKing.ships[0].x, ownKing.ships[0].y);
+    } else {
+        kingArrowOwn.classList.remove('active');
+    }
+    if (enemyKing && enemyKing.ships.length) {
+        positionEdgeArrow(kingArrowEnemy, enemyKing.ships[0].x, enemyKing.ships[0].y);
+    } else {
+        kingArrowEnemy.classList.remove('active');
+    }
+    if (kingCommandLegend) kingCommandLegend.classList.toggle('active', !!(me && me.isKing));
+
+    // Announce a command with a big banner the instant it changes, for
+    // anyone on that king's team (not just the king who called it) — a
+    // player who's blindly mashing 1-4 needs to actually see it land.
+    [ownKing, enemyKing].forEach(king => {
+        if (!king) return;
+        const key = king.team;
+        if (king.kingCommand && king.kingCommand !== lastSeenKingCommand[key]) {
+            showKingCommandBanner(king.kingCommand, king.team === myTeam);
+        }
+        lastSeenKingCommand[key] = king.kingCommand;
+    });
+}
+
+function resetZoneWarning() {
+    zoneWarnState = 'none';
+    if (zoneVignette) zoneVignette.className = '';
+    if (zoneWarning) zoneWarning.className = '';
+}
+
+// Checks every locally-controlled ship (there may be several in a fleet)
+// against the safe-zone boundary and drives the on-screen warning: a pulsing
+// banner plus a red screen-edge vignette, escalating once a ship is actually
+// outside and taking damage rather than just approaching the line.
+function updateZoneWarning() {
+    if (!zoneVignette || !zoneWarning) return;
+    if (!zone.active) { if (zoneWarnState !== 'none') resetZoneWarning(); return; }
+
+    const localPlayers = players.filter(p => !p.isBot && p.alive && p.ships.length);
+    if (!localPlayers.length) { if (zoneWarnState !== 'none') resetZoneWarning(); return; }
+
+    let closestEdgeDist = Infinity; // positive = inside zone, distance to border; negative = outside, distance past it
+    localPlayers.forEach(p => {
+        p.ships.forEach(s => {
+            const distFromCenter = Math.hypot(s.x - zone.x, s.y - zone.y);
+            const edgeDist = zone.radius - distFromCenter;
+            if (edgeDist < closestEdgeDist) closestEdgeDist = edgeDist;
+        });
+    });
+
+    let next = 'none';
+    if (closestEdgeDist <= 0) next = 'danger';
+    else if (closestEdgeDist <= ZONE_WARN_DISTANCE) next = 'warn';
+
+    if (next === zoneWarnState) return;
+    zoneWarnState = next;
+
+    if (next === 'none') {
+        zoneVignette.className = '';
+        zoneWarning.className = '';
+        return;
+    }
+    zoneVignette.className = next === 'danger' ? 'zv-danger' : 'zv-warn';
+    zoneWarning.className = next === 'danger' ? 'active zw-danger' : 'active';
+    zoneWarningText.textContent = next === 'danger' ? 'OUTSIDE SAFE ZONE — TAKING DAMAGE' : 'SAFE ZONE CLOSING — RETURN NOW';
+}
+
+// "Space-time warp" boundary: a hazard-striped kill zone outside the ring,
+// a soft red glow ring with a chromatic-jitter inner line, a slow ring of
+// rotating warp ticks, and pulsing rings that ripple inward — meant to read
+// as space itself compressing rather than a plain circle.
 function drawBattleZone() {
     if (!zone.active) return;
+    const t = Date.now() / 1000;
+    const bigW = WORLD_WIDTH * 2, bigH = WORLD_HEIGHT * 2;
+
+    // --- Danger-zone fill: dim red wash + slowly scrolling diagonal hazard stripes ---
     ctx.save();
     ctx.beginPath();
-    ctx.rect(zone.x - WORLD_WIDTH, zone.y - WORLD_HEIGHT, WORLD_WIDTH * 2, WORLD_HEIGHT * 2);
+    ctx.rect(zone.x - bigW, zone.y - bigH, bigW * 2, bigH * 2);
     ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2, true);
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,20,50,0.10)';
-    ctx.fill('evenodd');
+    ctx.clip('evenodd');
+
+    ctx.fillStyle = 'rgba(255,10,40,0.09)';
+    ctx.fillRect(zone.x - bigW, zone.y - bigH, bigW * 2, bigH * 2);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,40,70,0.11)';
+    ctx.lineWidth = 16;
+    ctx.beginPath();
+    const spacing = 70;
+    const scroll = (t * 34) % spacing;
+    for (let d = -bigW * 2; d < bigW * 2; d += spacing) {
+        const x = d + scroll;
+        ctx.moveTo(zone.x + x - bigH, zone.y - bigH);
+        ctx.lineTo(zone.x + x + bigH, zone.y + bigH);
+    }
+    ctx.stroke();
+    ctx.restore();
     ctx.restore();
 
+    // --- Outer glow ring ---
+    ctx.save();
+    ctx.shadowColor = 'rgba(255,20,55,0.95)';
+    ctx.shadowBlur = 28;
     ctx.beginPath();
     ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(47,224,255,0.6)';
+    ctx.strokeStyle = 'rgba(255,25,60,0.9)';
     ctx.lineWidth = 3;
-    ctx.setLineDash([10, 6]);
     ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.restore();
+
+    // --- Jittering chromatic-fringe inner line (the "warp" flicker) ---
+    const jitter = Math.sin(t * 4.2) * 1.6;
+    ctx.beginPath();
+    ctx.arc(zone.x, zone.y, zone.radius + jitter, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,150,180,0.55)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(zone.x, zone.y, zone.radius - jitter * 0.6, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(140,220,255,0.25)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // --- Slowly rotating hazard tick marks around the ring ---
+    const tickCount = Math.max(20, Math.round(zone.radius / 14));
+    const rotation = t * 0.12;
+    ctx.strokeStyle = 'rgba(255,90,120,0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < tickCount; i++) {
+        const a = rotation + (i / tickCount) * Math.PI * 2;
+        const cosA = Math.cos(a), sinA = Math.sin(a);
+        ctx.moveTo(zone.x + cosA * (zone.radius - 7), zone.y + sinA * (zone.radius - 7));
+        ctx.lineTo(zone.x + cosA * (zone.radius + 7), zone.y + sinA * (zone.radius + 7));
+    }
+    ctx.stroke();
+
+    // --- Rippling rings collapsing inward, suggesting compressing space ---
+    for (let i = 0; i < 3; i++) {
+        const phase = (t * 70 + i * 100) % 300;
+        const ringR = zone.radius - phase;
+        if (ringR > 15) {
+            ctx.beginPath();
+            ctx.arc(zone.x, zone.y, ringR, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255,60,95,' + (0.4 * (1 - phase / 300)).toFixed(3) + ')';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
 }
 
 function drawGravityWells() {
@@ -3440,7 +4327,7 @@ function drawRadar() {
     radarCtx.beginPath(); radarCtx.moveTo(w / 2, 0); radarCtx.lineTo(w / 2, h); radarCtx.moveTo(0, h / 2); radarCtx.lineTo(w, h / 2); radarCtx.stroke();
 
     let sx, sy, ox, oy;
-    if (modules.massiveMap || modules.battleRoyale) {
+    if (modules.massiveMap || modules.battleRoyale || modules.creatorsEdition) {
         const range = 620;
         sx = w / range; sy = h / range;
         ox = camera.x - range / 2; oy = camera.y - range / 2;
@@ -3548,13 +4435,77 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
             const lowHealth = isLowHealth(player, style.retreatThreshold);
             const highHealth = getTotalHP(player) / getMaxHPPool(player) > 0.75;
 
-            if (lowHealth) { player.botState = 'retreating'; showBotMessage(player, 'lowHP'); }
+            if (modules.kingMode && player.escortsKing && player.escortsKing.ships.length) {
+                // Escort AI: protect the king first, fight second. A threat
+                // that's actually close to the king always takes priority
+                // over whatever the escort would otherwise be doing.
+                const king = player.escortsKing;
+                const kingShip = king.ships[0];
+                const threatNearKing = players.find(p => p !== player && p.alive && p.ships.length &&
+                    p.team !== player.team && Math.hypot(p.ships[0].x - kingShip.x, p.ships[0].y - kingShip.y) < 260);
+                const distToKing = Math.hypot(leadShip.x - kingShip.x, leadShip.y - kingShip.y);
+
+                if (lowHealth) { player.botState = 'retreating'; }
+                else if (king.kingCommand === 'attack') {
+                    const enemyKing = players.find(p => p.isKing && p.team !== player.team && p.ships.length);
+                    if (threatNearKing) { player.botState = 'chasing'; player.target = threatNearKing; }
+                    else if (enemyKing) { player.botState = 'chasing'; player.target = enemyKing; }
+                    else { player.botState = 'escorting'; }
+                } else if (threatNearKing) {
+                    player.botState = 'chasing'; player.target = threatNearKing;
+                } else if (king.kingCommand === 'scatter') {
+                    player.botState = 'patrolling'; player.target = null;
+                } else if (king.kingCommand === 'regroup' || distToKing > 420) {
+                    player.botState = 'escorting';
+                } else if (nearestEnemy && enemyDist < style.chaseRange * 0.6) {
+                    player.botState = 'chasing'; player.target = nearestEnemy;
+                } else {
+                    player.botState = 'escorting';
+                }
+            } else if (modules.teamDeathmatch && !isThreatened && !lowHealth && (!nearestEnemy || enemyDist > style.chaseRange)) {
+                // No fight to join right now. Rally toward the local human
+                // player specifically when they're on this bot's team — a
+                // squad that visibly sticks with you reads much better than
+                // one that clusters around an abstract centroid you can't
+                // see — falling back to the team centroid if the human is
+                // dead, absent, or on the other side.
+                const humanAnchor = getLocalPlayer();
+                const followHuman = humanAnchor && humanAnchor.team === player.team && humanAnchor.alive && humanAnchor.ships.length;
+                const teammates = players.filter(p => p !== player && p.alive && p.ships.length && p.team === player.team);
+                let cx, cy;
+                if (followHuman) {
+                    cx = humanAnchor.ships[0].x; cy = humanAnchor.ships[0].y;
+                } else if (teammates.length) {
+                    cx = teammates.reduce((s, p) => s + p.ships[0].x, 0) / teammates.length;
+                    cy = teammates.reduce((s, p) => s + p.ships[0].y, 0) / teammates.length;
+                }
+                if (cx !== undefined) {
+                    if (Math.hypot(leadShip.x - cx, leadShip.y - cy) > (followHuman ? 200 : 260)) {
+                        player.botState = 'regrouping';
+                        player.target = { x: cx + (Math.random() - 0.5) * 140, y: cy + (Math.random() - 0.5) * 140 };
+                    } else {
+                        player.botState = 'patrolling'; player.target = null;
+                    }
+                } else {
+                    player.botState = 'patrolling'; player.target = null;
+                }
+            } else if (lowHealth) { player.botState = 'retreating'; showBotMessage(player, 'lowHP'); }
             else if (isThreatened) { player.botState = 'evading'; showBotMessage(player, 'evading'); }
             else if (nearestPowerUp && powerUpDist < settings.awarenessRange && player.ships.length < MAX_SHIPS_PER_PLAYER / 2) {
                 player.botState = 'powerUpChase'; player.target = nearestPowerUp; showBotMessage(player, 'powerUp');
             } else if (nearestEnemy && enemyDist < style.chaseRange) {
                 player.botState = (highHealth && player.difficulty === 'Deity') ? 'aggressiveChase' : 'chasing';
                 player.target = nearestEnemy; showBotMessage(player, 'chasing', nearestEnemy);
+                // Squad flanking: when several teammates are all converging on
+                // the same target, spread the approach angle out per-bot
+                // instead of everyone beelining the exact same point.
+                if (modules.teamDeathmatch || modules.kingMode) {
+                    const squadmates = players.filter(p => p !== player && p.alive && p.team === player.team && p.target === nearestEnemy);
+                    const flankIndex = squadmates.length; // stable-ish per decision cycle
+                    player.flankAngle = ((flankIndex % 4) - 1.5) * 0.5; // spread across ~4 lanes
+                } else {
+                    player.flankAngle = 0;
+                }
             } else {
                 player.botState = 'patrolling'; player.target = null;
                 if (Math.random() < 0.3) showBotMessage(player, 'patrol');
@@ -3597,6 +4548,23 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
         if ((player.botState === 'chasing' || player.botState === 'aggressiveChase') && player.target && player.target.ships && player.target.ships.length > 0) {
             const predicted = predictPosition(leadShip, player.target, 2.5);
             targetX = predicted.x; targetY = predicted.y;
+            if (player.flankAngle) {
+                // Approach from a lateral offset rather than dead-on, so a
+                // squad converging on one target spreads into a rough pincer
+                // instead of stacking on the same approach line.
+                const toTargetAngle = Math.atan2(targetY - leadShip.y, targetX - leadShip.x);
+                const flankDist = 90;
+                targetX += Math.cos(toTargetAngle + Math.PI / 2) * flankDist * player.flankAngle;
+                targetY += Math.sin(toTargetAngle + Math.PI / 2) * flankDist * player.flankAngle;
+            }
+        } else if (player.botState === 'escorting' && player.escortsKing && player.escortsKing.ships.length) {
+            // Loosely orbit the king rather than sitting exactly on top of
+            // them, so the escort screen reads as a moving perimeter.
+            const king = player.escortsKing.ships[0];
+            const orbitAngle = (Date.now() / 1400 + (player.escortSlot || 0)) % (Math.PI * 2);
+            const orbitR = 90 + (player.escortSlot || 0) * 14;
+            targetX = king.x + Math.cos(orbitAngle) * orbitR;
+            targetY = king.y + Math.sin(orbitAngle) * orbitR;
         } else if (player.botState === 'powerUpChase' && player.target) {
             targetX = player.target.x; targetY = player.target.y;
         } else if (player.botState === 'retreating') {
@@ -3925,7 +4893,9 @@ function updateDebris(deltaTime) {
     }
 }
 function damageMultiplier(ship) {
-    return (modules.overdrive && ship.shieldUntil && Date.now() < ship.shieldUntil) ? 0.5 : 1;
+    let m = (modules.overdrive && ship.shieldUntil && Date.now() < ship.shieldUntil) ? 0.5 : 1;
+    if (modules.creatorsEdition) m *= 0.65; // fights breathe longer — a single pass shouldn't end it
+    return m;
 }
 
 function getNextFormation(current) {
@@ -4059,17 +5029,90 @@ function spawnPowerUps() {
         const type = roll < 0.2 ? '+2' : roll < 0.4 ? '+4' : roll < 0.6 ? '+6' : roll < 0.8 ? '+8' : '+10';
         powerUps.push({ x: Math.random() * WORLD_WIDTH, y: Math.random() * WORLD_HEIGHT, type, pulse: 0, pulseDirection: 1 });
     }
+    // Gunner power-ups are a separate, independent roll — 1.5x less common
+    // than the regular fleet-growth power-ups above — and only spawn at all
+    // when the Mini-Gunners module is on.
+    if (modules.gunners && Math.random() < spawnProbability / 1.5) {
+        powerUps.push({ x: Math.random() * WORLD_WIDTH, y: Math.random() * WORLD_HEIGHT, type: 'gunner', pulse: 0, pulseDirection: 1 });
+    }
+}
+
+// Orbits each of a player's collected gunners around their lead ship and
+// fires them on a cooldown. The local human's gunners aim at the mouse
+// cursor (the intended "aiming" element); every other player's gunners —
+// bots, and other net players as rendered on this client — aim at that
+// player's nearest enemy instead, since remote mouse position isn't synced.
+function updateGunners(player, deltaTime) {
+    if (!player.gunners || !player.gunners.length) return;
+    if (!player.alive || !player.ships.length) return;
+    const lead = player.ships[0];
+    const orbitR = fleetGunnerRadius(player);
+    player.gunnerOrbitAngle = (player.gunnerOrbitAngle || 0) + GUNNER_ORBIT_SPEED * deltaTime;
+    const n = player.gunners.length;
+    const now = Date.now();
+
+    let aimX, aimY;
+    // Mouse-aim only makes sense as a duel mechanic: with 3+ fleets still
+    // alive, tracking a cursor while several threats converge stops being
+    // fun and starts being a chore, so everyone (including the local human)
+    // switches to auto-targeting the nearest enemy once it's not 1-on-1.
+    const aliveCount = players.filter(p => p.alive && p.ships.length).length;
+    const isDuel = aliveCount <= 2;
+    if (!player.isBot && isDuel && player === getLocalPlayer()) {
+        aimX = mouseWorld.x; aimY = mouseWorld.y;
+    } else {
+        const { player: enemy } = findNearestEnemy(player);
+        if (enemy && enemy.ships.length) { aimX = enemy.ships[0].x; aimY = enemy.ships[0].y; }
+        else { aimX = lead.x + Math.cos(lead.angle) * 300; aimY = lead.y + Math.sin(lead.angle) * 300; }
+    }
+
+    player.gunners.forEach((g, gi) => {
+        const a = player.gunnerOrbitAngle + (gi / n) * Math.PI * 2;
+        g.x = lead.x + Math.cos(a) * orbitR;
+        g.y = lead.y + Math.sin(a) * orbitR;
+        g.renderAngle = a;
+        if (gameState !== 'playing') return;
+        if (now - (g.lastShot || 0) <= GUNNER_FIRE_INTERVAL) return;
+        g.lastShot = now;
+        const shotAngle = Math.atan2(aimY - g.y, aimX - g.x);
+        player.bullets.push({
+            x: g.x, y: g.y,
+            dx: Math.cos(shotAngle) * GUNNER_BULLET_SPEED, dy: Math.sin(shotAngle) * GUNNER_BULLET_SPEED,
+            color: '#c86bff', size: modules.smallMode ? 1 : 1.6,
+            time: now, shooter: player, bounces: 0
+        });
+        withProximity(g.x, g.y, () => playLaser());
+    });
+}
+
+function drawGunners(player) {
+    if (!player.gunners || !player.gunners.length || !player.ships.length) return;
+    const s = modules.smallMode ? 3 : 5;
+    player.gunners.forEach(g => {
+        if (g.x === undefined) return;
+        ctx.save();
+        ctx.translate(g.x, g.y);
+        ctx.rotate(g.renderAngle || 0);
+        ctx.shadowColor = 'rgba(200,107,255,0.85)';
+        ctx.shadowBlur = 6;
+        ctx.fillStyle = '#c86bff';
+        ctx.fillRect(-s / 2, -s / 2, s, s);
+        ctx.restore();
+    });
 }
 
 function updatePowerUps(drawOnly) {
     for (let i = powerUps.length - 1; i >= 0; i--) {
         const pu = powerUps[i];
+        const isGunnerPU = pu.type === 'gunner';
         pu.pulse += pu.pulseDirection * 0.12;
         if (pu.pulse >= 1) pu.pulseDirection = -1;
         if (pu.pulse <= 0) pu.pulseDirection = 1;
-        const value = parseInt(pu.type.slice(1), 10) || 2;
+        const value = isGunnerPU ? 6 : (parseInt(pu.type.slice(1), 10) || 2);
         const baseRadius = (modules.smallMode ? 5 : 8.5) + value * 0.55;
         const radius = baseRadius + pu.pulse * 4;
+        const colorA = isGunnerPU ? '#c86bff' : '#00ffcc';
+        const colorB = isGunnerPU ? '#6a2fb8' : '#0066ff';
 
         if (!drawOnly && modules.magnetPowerups) {
             let nearestShip = null, nearestDist = 160;
@@ -4088,14 +5131,24 @@ function updatePowerUps(drawOnly) {
             }
         }
 
-        ctx.fillStyle = 'rgba(0, 255, 204, 0.3)';
+        ctx.fillStyle = isGunnerPU ? 'rgba(200,107,255,0.3)' : 'rgba(0, 255, 204, 0.3)';
         ctx.beginPath(); ctx.arc(pu.x, pu.y, radius + 6, 0, Math.PI * 2); ctx.fill();
         const gradient = ctx.createRadialGradient(pu.x, pu.y, 0, pu.x, pu.y, radius);
-        gradient.addColorStop(0, '#00ffcc'); gradient.addColorStop(1, '#0066ff');
+        gradient.addColorStop(0, colorA); gradient.addColorStop(1, colorB);
         ctx.fillStyle = gradient;
-        ctx.beginPath(); ctx.arc(pu.x, pu.y, radius, 0, Math.PI * 2); ctx.fill();
+        if (isGunnerPU) {
+            // Square icon (not a circle) so gunner pickups read differently
+            // from fleet-growth power-ups at a glance.
+            ctx.save();
+            ctx.translate(pu.x, pu.y);
+            ctx.rotate((Date.now() / 900) % (Math.PI * 2));
+            ctx.fillRect(-radius * 0.72, -radius * 0.72, radius * 1.44, radius * 1.44);
+            ctx.restore();
+        } else {
+            ctx.beginPath(); ctx.arc(pu.x, pu.y, radius, 0, Math.PI * 2); ctx.fill();
+        }
 
-        if (perfTier() !== 'low') {
+        if (!isGunnerPU && perfTier() !== 'low') {
             ctx.save();
             ctx.translate(pu.x, pu.y);
             ctx.rotate((Date.now() / 1400) % (Math.PI * 2));
@@ -4116,7 +5169,7 @@ function updatePowerUps(drawOnly) {
         if ((!modules.chromebookMode || Math.random() < 0.5) && Math.random() < 0.4) {
             particles.push({
                 x: pu.x + (Math.random() - 0.5) * radius * 2, y: pu.y + (Math.random() - 0.5) * radius * 2,
-                size: modules.smallMode ? 0.6 : 1.2, life: 25, color: '#00ffcc',
+                size: modules.smallMode ? 0.6 : 1.2, life: 25, color: colorA,
                 dx: (Math.random() - 0.5) * 1.2, dy: (Math.random() - 0.5) * 1.2
             });
         }
@@ -4124,7 +5177,7 @@ function updatePowerUps(drawOnly) {
         ctx.fillStyle = '#ffffff';
         ctx.font = (modules.smallMode ? '8px' : '10px') + ' Orbitron, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(pu.type, pu.x, pu.y + 3);
+        ctx.fillText(isGunnerPU ? 'G' : pu.type, pu.x, pu.y + 3);
 
         if (drawOnly) continue;
         let consumed = false;
@@ -4132,7 +5185,20 @@ function updatePowerUps(drawOnly) {
             const p = players[pj];
             for (let sj = 0; sj < p.ships.length && !consumed; sj++) {
                 const s = p.ships[sj];
-                if (Math.hypot(s.x - pu.x, s.y - pu.y) < radius + 6 && p.ships.length < MAX_SHIPS_PER_PLAYER) {
+                if (Math.hypot(s.x - pu.x, s.y - pu.y) >= radius + 6) continue;
+                if (isGunnerPU) {
+                    p.gunners = p.gunners || [];
+                    if (p.gunners.length < GUNNER_MAX) {
+                        p.gunners.push({ x: s.x, y: s.y, lastShot: 0 });
+                        powerUpDisplays.push({ x: pu.x, y: pu.y, text: 'GUNNER ACQUIRED', color: '#c86bff', time: Date.now() });
+                        if (p.isBot) showBotMessage(p, 'powerUp');
+                        withProximity(pu.x, pu.y, () => playPowerUp(4));
+                    } else {
+                        powerUpDisplays.push({ x: pu.x, y: pu.y, text: 'GUNNER SLOTS FULL', color: '#c86bff', time: Date.now() });
+                    }
+                    powerUps.splice(i, 1);
+                    consumed = true;
+                } else if (p.ships.length < MAX_SHIPS_PER_PLAYER) {
                     const count = Math.min(parseInt(pu.type.slice(1)), MAX_SHIPS_PER_PLAYER - p.ships.length);
                     for (let k = 0; k < count; k++) p.ships.push(makeShip(s.x, s.y, s.angle, 'small'));
                     showPowerUp(pu.x, pu.y, count, '#00ffcc');
@@ -4225,10 +5291,11 @@ function checkCollisions() {
             for (let tpi = 0; tpi < players.length && !consumed; tpi++) {
                 const targetPlayer = players[tpi];
                 if (targetPlayer === p || !targetPlayer.alive) continue;
+                if ((modules.teamDeathmatch || modules.kingMode) && targetPlayer.team !== undefined && targetPlayer.team === p.team) continue;
                 for (let si = targetPlayer.ships.length - 1; si >= 0; si--) {
                     const s = targetPlayer.ships[si];
                     const dist = Math.hypot(s.x - b.x, s.y - b.y);
-                    if (dist < 8) {
+                    if (dist < (modules.creatorsEdition ? 12 : 8)) {
                         const isCrit = modules.criticalHits && Math.random() < 0.15;
                         const dmg = Math.round((isCrit ? 80 : 40) * damageMultiplier(s));
                         s.hp -= dmg;
@@ -4305,6 +5372,7 @@ function checkCollisions() {
                 if (opi === pi) continue;
                 const op = players[opi];
                 if (!op.alive) continue;
+                if ((modules.teamDeathmatch || modules.kingMode) && op.team !== undefined && op.team === p.team) continue;
                 for (let osi = op.ships.length - 1; osi >= 0; osi--) {
                     const os = op.ships[osi];
                     const dist = Math.hypot(s.x - os.x, s.y - os.y);
@@ -4460,32 +5528,81 @@ function checkCollisions() {
 }
 
 /* ---------------------- 11. Main loop & boot ---------------------- */
-function updateCamera() {
-    if (!modules.massiveMap && !modules.battleRoyale && !persistentMode) {
-        camera.x = canvas.width / 2;
-        camera.y = canvas.height / 2;
+function updateCamera(deltaTime) {
+    const me = getLocalPlayer();
+    const wasSpectating = spectateActive;
+    spectateActive = !!(gameState === 'playing' && !persistentMode && me && !me.alive);
+    if (spectateLabel) spectateLabel.classList.toggle('active', spectateActive);
+
+    if (spectateActive) {
+        if (!wasSpectating) {
+            // Just died — start the free camera from wherever we died
+            // rather than snapping somewhere unrelated.
+            const lp = me.lastPos || { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
+            camera.x = lp.x; camera.y = lp.y;
+            spectateZoom = 1;
+        }
+        const dt = deltaTime || 0.016;
+        const panSpeed = (SPECTATE_PAN_SPEED / spectateZoom) * dt;
+        if (keys['w'] || keys['ArrowUp']) camera.y -= panSpeed;
+        if (keys['s'] || keys['ArrowDown']) camera.y += panSpeed;
+        if (keys['a'] || keys['ArrowLeft']) camera.x -= panSpeed;
+        if (keys['d'] || keys['ArrowRight']) camera.x += panSpeed;
+        // Q/E zoom — deliberately fixed keys, independent of the rebindable
+        // ship controls, since spectating is a different context entirely.
+        if (keys['q']) spectateZoom = Math.max(SPECTATE_ZOOM_MIN, spectateZoom - SPECTATE_ZOOM_SPEED * dt);
+        if (keys['e']) spectateZoom = Math.min(SPECTATE_ZOOM_MAX, spectateZoom + SPECTATE_ZOOM_SPEED * dt);
+        camera.x = clamp(camera.x, 0, WORLD_WIDTH);
+        camera.y = clamp(camera.y, 0, WORLD_HEIGHT);
+        renderZoom = spectateZoom;
         return;
     }
-    const me = players.find(p => p.isMe);
-    let tx, ty;
-    if (me && me.ships.length) {
-        // Normal case: follow my own lead ship.
-        tx = me.ships[0].x; ty = me.ships[0].y;
+    spectateZoom = 1;
+
+    if (!modules.massiveMap && !modules.battleRoyale && !modules.creatorsEdition && !persistentMode) {
+        camera.x = canvas.width / 2;
+        camera.y = canvas.height / 2;
+        renderZoom = 1;
+        return;
+    }
+
+    // Gather every locally-controlled fleet that's still alive with ships.
+    // Local multiplayer (2-3 players sharing one keyboard, see showBotMenu)
+    // puts more than one human seat on this same screen — previously the
+    // camera only ever followed seat 1, so seat 2+ could drift straight off
+    // the edge of a big map. Now the camera centers on the group and zooms
+    // out just enough to keep everyone local in frame together.
+    const localAlive = getLocalPlayers().filter(p => p.alive && p.ships.length);
+    let tx, ty, targetZoom = 1;
+    if (localAlive.length) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        localAlive.forEach(p => {
+            const s = p.ships[0];
+            minX = Math.min(minX, s.x); maxX = Math.max(maxX, s.x);
+            minY = Math.min(minY, s.y); maxY = Math.max(maxY, s.y);
+        });
+        tx = (minX + maxX) / 2; ty = (minY + maxY) / 2;
+        const spreadW = maxX - minX, spreadH = maxY - minY;
+        const margin = 220; // breathing room around the outermost local ships
+        const zoomForW = canvas.width / Math.max(1, spreadW + margin * 2);
+        const zoomForH = canvas.height / Math.max(1, spreadH + margin * 2);
+        targetZoom = Math.max(0.35, Math.min(1, zoomForW, zoomForH));
     } else if (me && me.lastPos) {
         // I exist but am between deaths (respawn delay) — hold steady at
         // where I died instead of snapping to whichever other player the
         // old fallback used to grab.
         tx = me.lastPos.x; ty = me.lastPos.y;
     } else {
-        // No local identity at all (e.g. local massiveMap play, or online
-        // but haven't entered yet) — fall back to the first human found.
+        // No local identity at all (e.g. online but haven't entered yet) —
+        // fall back to the first human found.
         const humanLead = players.find(p => !p.isBot && p.alive && p.ships.length);
         tx = humanLead ? humanLead.ships[0].x : camera.x;
         ty = humanLead ? humanLead.ships[0].y : camera.y;
     }
     camera.x += (tx - camera.x) * 0.12;
     camera.y += (ty - camera.y) * 0.12;
-    const halfW = canvas.width / 2, halfH = canvas.height / 2;
+    renderZoom += (targetZoom - renderZoom) * 0.08;
+    const halfW = (canvas.width / 2) / renderZoom, halfH = (canvas.height / 2) / renderZoom;
     camera.x = clamp(camera.x, halfW, Math.max(halfW, WORLD_WIDTH - halfW));
     camera.y = clamp(camera.y, halfH, Math.max(halfH, WORLD_HEIGHT - halfH));
 }
@@ -4511,9 +5628,11 @@ function guestFrame(currentTime) {
     if (inMatch && myPlayer && myPlayer.alive && myPlayer.ships.length) {
         updatePlayer(myPlayer, 0, false, deltaTime);
     }
-    if (inMatch) updateCamera(); else { camera.x = canvas.width / 2; camera.y = canvas.height / 2; }
+    if (inMatch) updateCamera(deltaTime); else { camera.x = canvas.width / 2; camera.y = canvas.height / 2; spectateActive = false; renderZoom = 1; }
     ctx.save();
-    ctx.translate(canvas.width / 2 - camera.x, canvas.height / 2 - camera.y);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(renderZoom, renderZoom);
+    ctx.translate(-camera.x, -camera.y);
 
     drawNebula();
     drawStars();
@@ -4524,21 +5643,27 @@ function guestFrame(currentTime) {
     if (inMatch) {
         updateAsteroids(deltaTime, true);
         updatePowerUps(true);
+        updateMouseWorld();
+        updateKingArrows();
+        players.forEach(p => updateGunners(p, deltaTime));
         players.forEach(p => {
             if (p.alive && p.ships.length > 0) {
                 p.ships.forEach((s, si) => drawShip(s, p.ships.length, si === 0, !p.isBot, p));
+                drawGunners(p);
                 drawBullets(p);
             }
         });
         updateParticles(deltaTime);
         drawShockwaves();
         drawDamageFormationPowerUp();
+        drawSpeechBubbles();
 
         renderFleetList();
         elimList.innerHTML = eliminations.map(e => '<div class="elim-toast">' + e.name + ' eliminated</div>').join('');
         hudClock.textContent = formatTime(Date.now() - matchStartTime);
         drawRadar();
-    }
+        updateZoneWarning();
+    } else if (zoneWarnState !== 'none') resetZoneWarning();
 
     ctx.restore();
     requestAnimationFrame(gameLoop);
@@ -4554,9 +5679,12 @@ function gameLoop(currentTime) {
     frameCount++;
 
     const inMatch = (gameState === 'countdown' || gameState === 'playing');
-    if (inMatch) updateCamera(); else { camera.x = canvas.width / 2; camera.y = canvas.height / 2; }
+    if (inMatch) updateCamera(deltaTime); else { camera.x = canvas.width / 2; camera.y = canvas.height / 2; spectateActive = false; renderZoom = 1; }
+    if (!inMatch && zoneWarnState !== 'none') resetZoneWarning();
     ctx.save();
-    ctx.translate(canvas.width / 2 - camera.x, canvas.height / 2 - camera.y);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.scale(renderZoom, renderZoom);
+    ctx.translate(-camera.x, -camera.y);
 
     drawNebula();
     drawStars();
@@ -4604,11 +5732,16 @@ function gameLoop(currentTime) {
         updateAsteroids(deltaTime);
         if (modules.debrisField) updateDebris(deltaTime);
         updateBattleZone(deltaTime);
+        updateZoneWarning();
+        updateMouseWorld();
+        updateKingArrows();
+        players.forEach(p => updateGunners(p, deltaTime));
         checkCollisions();
 
         players.forEach(p => {
             if (p.alive && p.ships.length > 0) {
                 p.ships.forEach((s, si) => drawShip(s, p.ships.length, si === 0, !p.isBot, p));
+                drawGunners(p);
                 drawBullets(p);
             }
         });
@@ -4621,6 +5754,7 @@ function gameLoop(currentTime) {
         updateParticles(deltaTime);
         drawShockwaves();
         drawDamageFormationPowerUp();
+        drawSpeechBubbles();
 
         if (modules.separation) {
             const midX = WORLD_WIDTH / 2, midY = WORLD_HEIGHT / 2;
@@ -4652,19 +5786,52 @@ function gameLoop(currentTime) {
         }
 
         const alivePlayers = players.filter(p => p.alive && p.ships.length > 0);
-        if (!persistentMode && alivePlayers.length <= 1 && gameState === 'playing') {
+        let matchOver = false, winners = [], noWinnerReason = '';
+        if (modules.kingMode) {
+            const aliveKings = players.filter(p => p.isKing && p.alive && p.ships.length > 0);
+            if (!persistentMode && gameState === 'playing' && aliveKings.length <= 1) {
+                matchOver = true;
+                if (aliveKings.length === 1) {
+                    const winningTeam = aliveKings[0].team;
+                    winners = players.filter(p => p.team === winningTeam);
+                } else {
+                    noWinnerReason = 'Both kings fell — mutual destruction';
+                }
+            }
+        } else if (modules.teamDeathmatch) {
+            const aliveTeams = [...new Set(alivePlayers.map(p => p.team))];
+            if (!persistentMode && gameState === 'playing' && aliveTeams.length <= 1) {
+                matchOver = true;
+                if (aliveTeams.length === 1) winners = players.filter(p => p.team === aliveTeams[0]);
+                else noWinnerReason = 'Mutual destruction';
+            }
+        } else if (!persistentMode && alivePlayers.length <= 1 && gameState === 'playing') {
+            matchOver = true;
+            if (alivePlayers.length === 1) winners = [alivePlayers[0]];
+            else noWinnerReason = 'Mutual destruction';
+        }
+
+        if (matchOver) {
             gameState = 'victory';
             victoryDisplayTime = Date.now();
             const durationText = formatTime(Date.now() - matchStartTime);
             const activeModuleCount = MODULE_DEFS.filter(m => modules[m.id]).length;
-            if (alivePlayers.length === 1) {
-                const w = alivePlayers[0];
-                winnerText.textContent = w.name + ' Wins!';
-                victorySub.textContent = 'Eliminated ' + eliminations.length + ' hostile fleet' + (eliminations.length === 1 ? '' : 's') + ' in ' + durationText;
-                pushSystemChat('MATCH COMPLETE — ' + w.name.toUpperCase() + ' WINS');
+            if (winners.length) {
+                const teamMode = modules.teamDeathmatch || modules.kingMode;
+                if (teamMode && winners.length > 1) {
+                    const teamLabel = winners[0].team === 0 ? 'Team Blue' : 'Team Red';
+                    winnerText.textContent = teamLabel + ' Wins!';
+                    victorySub.textContent = winners.map(w => w.name).join(', ') + ' — ' + eliminations.length + ' eliminated in ' + durationText;
+                    pushSystemChat('MATCH COMPLETE — ' + teamLabel.toUpperCase() + ' WINS');
+                } else {
+                    const w = winners[0];
+                    winnerText.textContent = w.name + ' Wins!';
+                    victorySub.textContent = 'Eliminated ' + eliminations.length + ' hostile fleet' + (eliminations.length === 1 ? '' : 's') + ' in ' + durationText;
+                    pushSystemChat('MATCH COMPLETE — ' + w.name.toUpperCase() + ' WINS');
+                }
             } else {
                 winnerText.textContent = 'No Winner';
-                victorySub.textContent = 'Mutual destruction after ' + durationText;
+                victorySub.textContent = (noWinnerReason || 'Mutual destruction') + ' after ' + durationText;
                 pushSystemChat('MATCH COMPLETE — NO SURVIVORS');
             }
             victoryStats.innerHTML =
@@ -4705,6 +5872,14 @@ window.onload = () => {
     elimList = document.getElementById('elimList');
     hudClock = document.getElementById('hudClock');
     countdownLabel = document.getElementById('countdownLabel');
+    zoneVignette = document.getElementById('zoneVignette');
+    zoneWarning = document.getElementById('zoneWarning');
+    zoneWarningText = document.getElementById('zoneWarningText');
+    spectateLabel = document.getElementById('spectateLabel');
+    kingArrowOwn = document.getElementById('kingArrowOwn');
+    kingArrowEnemy = document.getElementById('kingArrowEnemy');
+    kingCommandLegend = document.getElementById('kingCommandLegend');
+    kingCommandBanner = document.getElementById('kingCommandBanner');
 
     menu = document.getElementById('menu');
     botMenu = document.getElementById('botMenu');
@@ -4738,12 +5913,52 @@ window.onload = () => {
     if (copyYearEl) copyYearEl.textContent = String(new Date().getFullYear());
 
     document.addEventListener('keydown', e => {
+        if (rebindingAction) {
+            e.preventDefault();
+            const hint = document.getElementById('rebindHint');
+            if (e.key === 'Escape') {
+                rebindingAction = null;
+                renderKeybindList();
+                if (hint) hint.style.display = 'none';
+                return;
+            }
+            const conflict = KEYBIND_ACTIONS.find(a => a.id !== rebindingAction && defaultControls[0][a.id] === e.key);
+            if (conflict) {
+                if (hint) hint.textContent = '"' + keyDisplayName(e.key) + '" is already used by ' + conflict.label + '. Try another key.';
+                return; // stay in listening mode so they can immediately try again
+            }
+            defaultControls[0][rebindingAction] = e.key;
+            saveControls();
+            rebindingAction = null;
+            renderKeybindList();
+            if (hint) hint.style.display = 'none';
+            return;
+        }
         keys[e.key] = true;
         if (gameState === 'victory' && Date.now() - victoryDisplayTime >= 3000) {
             restartGame();
         }
+        if (modules.kingMode && gameState === 'playing') {
+            const king = getLocalPlayer();
+            if (king && king.isKing) {
+                const commandKeys = { '1': 'regroup', '2': 'scatter', '3': 'defend', '4': 'attack' };
+                if (commandKeys[e.key]) {
+                    king.kingCommand = king.kingCommand === commandKeys[e.key] ? null : commandKeys[e.key];
+                    pushSystemChat('THE KING ORDERS: ' + (king.kingCommand || 'STAND DOWN').toUpperCase());
+                }
+            }
+        }
     });
     document.addEventListener('keyup', e => { keys[e.key] = false; });
+    canvas.addEventListener('mousemove', e => {
+        const rect = canvas.getBoundingClientRect();
+        mouseScreen.x = e.clientX - rect.left;
+        mouseScreen.y = e.clientY - rect.top;
+    });
+
+    loadControls();
+    loadAudioSettings();
+    applyAudioSettings();
 
     initMenuBots();
     requestAnimationFrame(gameLoop);
