@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Top Down Space</title>
 <meta name="description" content="Top Down Space — command a growing fleet of starships, master formations, and be the last commander standing.">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
 <link id="favicon" rel="icon" type="image/png" href="https://topdownspace.github.io/favicon-32x32.png">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6598513151197899"
  crossorigin="anonymous"></script>
@@ -84,6 +84,43 @@
         --glow-a: rgba(43,255,158,0.14); --glow-b: rgba(23,201,168,0.12);
         --stage-a: rgba(4,20,12,0.9); --stage-b: rgba(1,5,3,1);
     }
+    html[data-theme="anime"] {
+        --void-0: #150a20; --void-1: #201032; --void-2: #2c1844;
+        --panel-bg: rgba(30,15,48,0.88); --panel-bg-soft: rgba(38,19,58,0.74);
+        --panel-line: rgba(255,120,205,0.3);
+        --cyan: #ff5fc4; --cyan-dim: #d43fa0; --violet: #4de8ff; --violet-dim: #2cb8d9;
+        --gold: #ffe066; --danger: #ff4d6d; --success: #6dffb8;
+        --text-hi: #fff0fa; --text-mid: #e0b3d9; --text-dim: #ad82ab;
+        --glow-a: rgba(255,95,196,0.2); --glow-b: rgba(77,232,255,0.16);
+        --stage-a: rgba(42,18,58,0.9); --stage-b: rgba(12,5,18,1);
+        --font-display: 'Baloo 2', sans-serif;
+    }
+
+    /* Anime theme also softens the whole "military HUD" shape language:
+       rounded corners everywhere instead of angular clip-path cuts, and the
+       corner-bracket HUD decorations are turned off in favor of a plain glow. */
+    html[data-theme="anime"] .btn,
+    html[data-theme="anime"] .option-card,
+    html[data-theme="anime"] .module-card,
+    html[data-theme="anime"] .preset-card,
+    html[data-theme="anime"] .theme-card,
+    html[data-theme="anime"] .fleet-card,
+    html[data-theme="anime"] .pilot-swatch-custom,
+    html[data-theme="anime"] .net-code-display {
+        clip-path: none !important;
+        border-radius: 16px !important;
+    }
+    html[data-theme="anime"] .btn-sm { border-radius: 12px !important; }
+    html[data-theme="anime"] .console-panel,
+    html[data-theme="anime"] .doc-panel {
+        border-radius: 26px !important;
+        background-image: none !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 60px rgba(255,95,196,0.18) !important;
+    }
+    html[data-theme="anime"] .corner-frame { opacity: 0 !important; }
+    html[data-theme="anime"] .logo-title { letter-spacing: 0.5px !important; }
+    html[data-theme="anime"] .ship-icon,
+    html[data-theme="anime"] .pilot-swatch { border-radius: 50%; }
 
     * { box-sizing: border-box; }
 
@@ -242,7 +279,6 @@
         border-radius: 3px;
         padding: 7px 9px;
         margin-bottom: 7px;
-        animation: rise 0.25s var(--ease);
     }
     .fleet-card .fc-row {
         display: flex;
@@ -303,7 +339,6 @@
         padding: 4px 7px;
         margin-bottom: 5px;
         background: rgba(255,77,109,0.08);
-        animation: rise 0.2s var(--ease);
         letter-spacing: 0.3px;
     }
 
@@ -701,6 +736,7 @@
     .theme-swatch.solar { background: linear-gradient(135deg, #170b03, #ff9d3d 55%, #ff5f56); }
     .theme-swatch.neon { background: linear-gradient(135deg, #0a0014, #ff2fd0 55%, #4fe8ff); }
     .theme-swatch.emerald { background: linear-gradient(135deg, #030906, #2bff9e 55%, #17c9a8); }
+    .theme-swatch.anime { background: linear-gradient(135deg, #150a20, #ff5fc4 55%, #4de8ff); }
     .theme-label { font-family: var(--font-display); font-size: 9.5px; letter-spacing: 0.5px; color: var(--text-mid); }
     .theme-card.active .theme-label { color: var(--gold); }
 
@@ -1413,6 +1449,14 @@ const ASTEROID_SPAWN_DISTANCE = 100;
 const sidebarWidth = 260;
 let WORLD_WIDTH = 900, WORLD_HEIGHT = 900;
 const camera = { x: 450, y: 450 };
+const zone = { x: 450, y: 450, radius: 450, active: false };
+let zoneShrinkTimer = 0;
+const ZONE_SHRINK_INTERVAL = 22;
+const ZONE_MIN_RADIUS = 140;
+const ZONE_SHRINK_FACTOR = 0.72;
+const ZONE_TICK_DAMAGE = 18;
+const ZONE_TICK_INTERVAL = 700;
+const BATTLE_ROYALE_AUTO_TRIGGER_MS = 5 * 60 * 1000;
 
 /* ---------------------- Online play (experimental, P2P via PeerJS) ---------------------- */
 const GLOBAL_LOBBY_ID = 'topdownspace-global-lobby-v1';
@@ -1773,6 +1817,7 @@ function buildSnapshot() {
         powerUps: powerUps.map(pu => ({ x: pu.x, y: pu.y, type: pu.type, pulse: pu.pulse, pulseDirection: pu.pulseDirection })),
         gravityWells: gravityWells.map(w => ({ x: w.x, y: w.y, strength: w.strength, spin: w.spin })),
         debrisClouds: debrisClouds.map(d => ({ x: d.x, y: d.y, radius: d.radius, life: d.life, maxLife: d.maxLife })),
+        zone: { x: zone.x, y: zone.y, radius: zone.radius, active: zone.active },
         eliminations: eliminations.slice(-8)
     };
 }
@@ -1852,6 +1897,7 @@ function applyNetSnapshot(data) {
     powerUps.length = 0; data.powerUps.forEach(pu => powerUps.push(pu));
     gravityWells.length = 0; (data.gravityWells || []).forEach(w => gravityWells.push(w));
     debrisClouds.length = 0; (data.debrisClouds || []).forEach(d => debrisClouds.push(d));
+    if (data.zone) { zone.x = data.zone.x; zone.y = data.zone.y; zone.radius = data.zone.radius; zone.active = data.zone.active; }
     eliminations = data.eliminations || [];
 }
 
@@ -1976,7 +2022,10 @@ const MODULE_DEFS = [
       detail: 'Splits the arena into four quarters at the start, with each player assigned to one. Invisible barriers keep you inside your quarter as long as more than one fleet remains alive there; once your quarter is down to a single surviving fleet, its barrier opens, gradually funneling everyone toward a final confrontation instead of an all-at-once brawl from the first second.' },
     { id: 'massiveMap', group: 'Rule-Changers', label: 'Massive Map',
       desc: 'A 3\u00d7-sized arena — the camera follows you instead of showing it all at once.',
-      detail: 'Expands the arena to roughly nine times its normal area and switches the camera to follow your lead ship, slither.io-style, instead of showing the whole map at once. Asteroids, obstacles, and hazards scale up to match the extra space, so density stays similar even though there\u2019s far more room to maneuver. The tactical radar switches to a local view centered on you rather than the full map, since the whole arena no longer fits on one small dial. If more than one human is playing, the camera follows Pilot 1. Bots don\u2019t need the camera and are completely unaffected by it — expect fights to spread out and hunts to take longer.' }
+      detail: 'Expands the arena to roughly nine times its normal area and switches the camera to follow your lead ship, slither.io-style, instead of showing the whole map at once. Asteroids, obstacles, and hazards scale up to match the extra space, so density stays similar even though there\u2019s far more room to maneuver. The tactical radar switches to a local view centered on you rather than the full map, since the whole arena no longer fits on one small dial. If more than one human is playing, the camera follows Pilot 1. Bots don\u2019t need the camera and are completely unaffected by it — expect fights to spread out and hunts to take longer.' },
+    { id: 'battleRoyale', group: 'Rule-Changers', label: 'Battle Royale',
+      desc: 'A shrinking safe zone forces the fight inward, or take steady damage outside it.',
+      detail: 'The arena expands to a large map with the camera following you, exactly like Massive Map, and a glowing safe-zone boundary is drawn around a circle covering the whole arena. Every so often that circle shrinks toward the center, and any ship caught outside it takes steady periodic damage until it gets back in. Late in a match, the shrinking zone leaves nowhere to hide, forcing the last few fleets into a final confrontation instead of an endless standoff. Combine it with hazard modules like Asteroid fields or Gravity Wells for a genuinely brutal endgame. Even without this module selected, every match automatically activates the shrinking safe zone (without the map expansion) once 5 minutes have elapsed, so no match runs forever.' }
 ];
 
 const MODULE_GROUPS = ['Hazards', 'Fleet & Combat', 'Visual & Performance', 'Rule-Changers'];
@@ -2053,6 +2102,7 @@ const ICONS = {
     infiniteArena: svgIcon('<path d="M6.5 8.7a3.3 3.3 0 1 0 0 6.6c2.7 0 4.3-2.2 5.5-3.3 1.2 1.1 2.8 3.3 5.5 3.3a3.3 3.3 0 1 0 0-6.6c-2.7 0-4.3 2.2-5.5 3.3-1.2-1.1-2.8-3.3-5.5-3.3z"></path>'),
     separation: svgIcon('<rect x="3" y="3" width="7.5" height="7.5"></rect><rect x="13.5" y="3" width="7.5" height="7.5"></rect><rect x="3" y="13.5" width="7.5" height="7.5"></rect><rect x="13.5" y="13.5" width="7.5" height="7.5"></rect>'),
     massiveMap: svgIcon('<rect x="2.5" y="2.5" width="19" height="19" rx="1" opacity="0.35"></rect><rect x="8" y="8" width="8" height="8" rx="0.5"></rect>'),
+    battleRoyale: svgIcon('<circle cx="12" cy="12" r="9.5" opacity="0.3"></circle><circle cx="12" cy="12" r="5.5"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>'),
     shieldRegen: svgIcon('<path d="M12 2.5l7.5 3.6v5.4c0 4.8-3.2 8-7.5 9.5-4.3-1.5-7.5-4.7-7.5-9.5V6.1z"></path><path d="M12 8v7M8.5 11.5h7"></path>'),
     criticalHits: svgIcon('<path d="M12 2l2.4 6.1L21 10l-6.1 2.4L12 19l-2.4-6.1L3 10l6.1-2.1z"></path>'),
     magnetPowerups: svgIcon('<path d="M7 3.5v8a5 5 0 0 0 10 0v-8"></path><path d="M7 3.5H2.7M17 3.5h4.3M7 9H2.7M17 9h4.3"></path>'),
@@ -2108,11 +2158,28 @@ function makeOsc(type, freq) {
     o.frequency.value = freq;
     return o;
 }
+let soundVolMult = 1;
+function proximityVolume(x, y) {
+    if (!modules.massiveMap && !modules.battleRoyale) return 1;
+    const me = players.find(p => p.isMe) || players.find(p => !p.isBot && p.alive && p.ships.length);
+    if (!me || !me.ships.length) return 1;
+    const dist = Math.hypot(me.ships[0].x - x, me.ships[0].y - y);
+    const HEAR_RADIUS = 700;
+    if (dist >= HEAR_RADIUS) return 0;
+    return Math.max(0, 1 - dist / HEAR_RADIUS);
+}
+function withProximity(x, y, fn) {
+    const prev = soundVolMult;
+    soundVolMult = proximityVolume(x, y);
+    fn();
+    soundVolMult = prev;
+}
 function envGain(duration, peak, attack) {
     const g = audioCtx.createGain();
     const now = audioCtx.currentTime;
+    const scaledPeak = peak * soundVolMult;
     g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.001), now + (attack || 0.005));
+    g.gain.exponentialRampToValueAtTime(Math.max(scaledPeak, 0.001), now + (attack || 0.005));
     g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
     return g;
 }
@@ -2312,7 +2379,8 @@ const THEMES = [
     { id: 'minimal', label: 'Minimal' },
     { id: 'solar', label: 'Solar' },
     { id: 'neon', label: 'Neon Arcade' },
-    { id: 'emerald', label: 'Emerald' }
+    { id: 'emerald', label: 'Emerald' },
+    { id: 'anime', label: 'Anime' }
 ];
 let currentTheme = 'nebula';
 (function loadTheme() {
@@ -2613,9 +2681,14 @@ function startGame(bots, withModules) {
 
     MAX_SHIPS_PER_PLAYER = modules.maxShips1000 ? 1000 : 100;
     MAX_ASTEROIDS = modules.noAsteroids ? 0 : (modules.doubleAsteroids ? 30 : 15);
-    if (modules.massiveMap && !modules.noAsteroids) MAX_ASTEROIDS = Math.round(MAX_ASTEROIDS * 4.5);
-    WORLD_WIDTH = modules.massiveMap ? canvas.width * 3 : canvas.width;
-    WORLD_HEIGHT = modules.massiveMap ? canvas.height * 3 : canvas.height;
+    if ((modules.massiveMap || modules.battleRoyale) && !modules.noAsteroids) MAX_ASTEROIDS = Math.round(MAX_ASTEROIDS * 4.5);
+    WORLD_WIDTH = (modules.massiveMap || modules.battleRoyale) ? canvas.width * 3 : canvas.width;
+    WORLD_HEIGHT = (modules.massiveMap || modules.battleRoyale) ? canvas.height * 3 : canvas.height;
+    zone.active = !!modules.battleRoyale;
+    zone.x = WORLD_WIDTH / 2;
+    zone.y = WORLD_HEIGHT / 2;
+    zone.radius = Math.min(WORLD_WIDTH, WORLD_HEIGHT) / 2;
+    zoneShrinkTimer = 0;
 
     players.length = 0;
     menuBots.length = 0;
@@ -2841,6 +2914,11 @@ function drawShip(ship, totalEntities, isLead, isPlayer, player) {
     let turnDelta = ship.angle - ship.lastAngle;
     turnDelta = ((turnDelta + Math.PI) % (Math.PI * 2)) - Math.PI;
     ship.lastAngle = ship.angle;
+
+    if (currentTheme === 'anime') {
+        drawShipSprite(ship, size, player);
+        return;
+    }
     const bank = tier === 'low' ? 0 : clamp(1 - Math.abs(turnDelta) * 2.6, 0.82, 1);
 
     ctx.save();
@@ -2938,6 +3016,7 @@ function drawShip(ship, totalEntities, isLead, isPlayer, player) {
 function drawBullets(player) {
     const tier = perfTier();
     player.bullets.forEach(b => {
+        if (currentTheme === 'anime' && drawBulletSprite(b)) return;
         if (tier === 'high') { ctx.save(); ctx.shadowColor = player.traitColor; ctx.shadowBlur = 6; }
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
@@ -3019,6 +3098,84 @@ function drawDamageFormationPowerUp() {
         ctx.textAlign = 'center';
         ctx.fillText(p.text, p.x, p.y - 10 - (now - p.time) * 0.02);
     }
+}
+
+const ANIME_SPRITE_DATA = {
+    ship_full: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABdklEQVR42u2Yv0rEQBDGv13yEoLYeKXg2XnPIGyXwt5Y2go2YiPYWqq9hV3AZzi7nJDybILgY6xNsnhxjbu3O2wC84MUCfnzfTO7M0MAhmEYhmGY0aLbgwxJKX65XkFrDUoTklK8OSE0QZkB3N59Qp2/YmpLSC/XK9xcPJsL6umLLAty6lVCUkefOguTz0AW+4V11eD6/tRsYgAoz3YAAG8f76M28GtpXF3u4nj/0CZeAxBjWkL68aUEABS5Ql011psWszkAoO0ReiwGNpqW80ORNrRMIT6mCZlKfCwTMlS8rea70o0ZISZkqsjHyoRMEfmYmZChke+a1jaUDyfBmXA1YOq8TfhfdX+In42tb8SnTwR14k54kauN60Wu0M9W18QsDc10a9JR4uBob0i4+G+ssN23mM21zYiPoSww4qHzjBgyEtVAXTUxhTsZcX7QY9IUvhWri6YQguR7WWSj1o3blkbvjKSk/0OL/AcXwzAMwzDMFnwDpHnCA0XEmnYAAAAASUVORK5CYII=',
+    ship_slight: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAB9UlEQVR42u2Yz0oCURTGvzvMMwSBm8hFu6RVvkC0UjctgnChFSghhEjQJtsEESIMYQuzxRC0EGISgugFxlWO4HLcSBD0ErdF3mFkRp1/VxTuDwSduTOe75zv3DMMIBAIBAKBQLC00PGHGxLP4HXTAKUUPEVIPIO3fnAUwbMCuLn9Rur0HatmIaqbBq5LL9aB1OMPtypIq75LSLyzz7sKK18BOeobDnojXCmHVhMDQOd4HQDQHfaXWoDDGpcXMexubrsFTwGQpZq4zXaHTV3abHeobhq0kM5RRiGds87rphHZhJaialzfF0XU0DLP4LO1EqrndzNFEEJC2UninflqvWKJ4VEJKWzwbnu+F4qZvPWYEUaEvAjPV+sVFDP5uT0RxE5+K0AL6ZynzKtlBR/3nxP9YKehtRD7ff2f0iEqIQXJvFpWrINsaNn5etawtrGF/bM9TzdmQoKI8CqANtsdqGXFyqQ98EFv5LhgXvDdYR8NreVqrXGiKK8eQLZWglpWsHOUAQCcHKQmzj+8PTksk4wnHN9ZRRtaK/BWSPx4nwXFMm4LnEyzG3uUIIS4rrMLYWtnrA8uQDcNL4H7FTBViFcBni006I28BB7KCcl4YkJIpBYKUjEfFQj8f3LEQl0bd7w18ujNhb3Q4v6CSyAQCAQCgSAAf242ACG8QCkQAAAAAElFTkSuQmCC',
+    ship_damaged: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACeElEQVR42u2YT2gTQRTGv12iSDzlUilVg5hDg4J1RTAHe/MkJrmICKXQqOgqDUgtQg+aIgqipZIeGl2IUISCe1BXb73pYYVgsoWIglvE2OqxVxHheXCzZLP5nxlsYX6QQ2be7L5v33szbxcQCAQCgUAg2LKQ8+OGzNN507ZAROApQubpfJUPV05yExHgGd5799cBrOPxodC2SiEybQvXzt1xBy7vznGLgsy7ijeKTwEAg8OhbREBMm0Ls+llDOyJuM7zjALXCAwpExhSJrCRm+QWBYl1BDTdwOGj+2uKGDCenAYAvF9bRSwywvS+LHchX2rM3NyLEwePuM7X2UrYQpCmG9VTlzTdINO2SE2kqIqaSLnzpm0xO6FlVoXb9SJGJ3SAp/Pjc2lkrj9oKUKSpL7SSebl/CdVBQBk5qddMTwi0asAyp+KAQBm08tNjXY+nGw6dzV5gYkIuR/nm/H17oLnf2Z+GktTWV90WESiWwGkJlIAgOc7RlsaFoJRGLvOeOqhlouDXzxR6FWE3MuTLwSj7uDt7Hmf4WZ4HwYODCP+63VHF+4nnToVQJpuoBCMIvTtu8/xcqniWxD++AK/byw0veDq2p+GUQAAZ3PoSERP2+j4XBpLU1koY0kAwKWzcc/84qs8jtfVidNCAABSKyYAII8YEPyXTkV1FMriW37nQPHZSzePy6UKlLFkreNSu7aikV1qxSTAdMUqzni1/WDdJpOmG56WoZ29aVtERPTjUbytff0a5ilULlVaPXEmXXEsMkI1NcC0naZu7atOhN/cws/PmziWe8flfgHGQhsWrvMm9j/fU/r+oMX9A5dAIBAIBAJBD/wFwOMfnnPrMXEAAAAASUVORK5CYII=',
+    ship_very_damaged: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAC3ElEQVR42u1YTWgTQRh9u1iRnOzBQi0SSntoDsUSqphD6ikHwabxICKEgtFCojQotRc9GBEF0bQhOaQS6KEtCAZrjQXB4kEvK4SkW6gIukWttqAe9KBgtfB5SHeabVPbZHc04jzYy/zsvvd975uZHUBAQEBAQEBAoGpBKw83yDzJK5oKIgJPETJP8jpyQTc3Edt4pvfa9ffA/jrcaqn9pyxEiqbizLErrOHwaA23LMi8q3hhqBcAUM8pC5LV0V+MeRF45AAAfPygAQAaggksDPUin7tr+Xe51kCD8wTLQkMwgclvP7H7bKa61/1c0E2KptKAvZU6eyaps2eSdCiaavm+YKWFCAAG7K0AANfjUQDAgaa9AIBnczOF9uY2XvY1R/5Cm0ePLqXSGVI0lUJdARb9UFeA9ReNrYpViIY9rrImNO/6atkObbaISdFUvAiFSnZ2R8OInLuxrt2RTBYmE0GSJDJjJ9ks+WJCxdBFRQb7mZiSLzGZCdmsbS6Hb284aPvN3g37TvtOWiJCNkN+pC/OGhsvrpJ9fTVhmBAZ7DeMLWW5SkWUK4BCXQEAwJ2aDnRHw2is+WQgpyNrcyCzo5PVwFoLnap/ZcgCAIw3tZctQq4k8lmbw1CoAJAfm2Btn+17UNfYAu/3B4UMlCjkjexUroitCqBUOoOszYHat+8AAJfix1mn0++D0+8zTLA/v4cf5xOsiNdmaWZueV0WjmhZAMBKoIjbMtodDWOkL85I9xz1GvqT94exr2hviAz2Q5JWV8rAlFIgChdgK9gpH+qAM/kUb5aXgJdL1u8D+bEJZpfZ6Xk4/b5i4lKpY8VmR5fAlEKAwsQ6ARw8tBNPHn7h8pNCqXSGUukMbeFnnRRNJUVTiYhoMebddLw+Z9jjolzQTZZbaHZ6/ncRt+RQ6WpuI2atv3g9QuNN7SyiizFvWRH9U9cxWzpa60QqEPD/XXAJCAgICAgICFSAX3O2TVfhn51bAAAAAElFTkSuQmCC',
+    engine: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA9ElEQVR42mNgGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGJmCkodn/6WEXrTzw38XYHkVgz9mDNLGPiRaOz/RPYljC8Ych68NXhqwPXxmWcPxhyPRPwhYrg9IDdAVMIzkT400OOPIA1d1Crgf+1xd0MRw9vBUuYG3rjcLHB9DVWtt6MzROKCPLPRQnIWtbb6yhjCxOjJrRTEwpgCUBfGkdVhdA1Q6oB6jqCHLTP1ViAFfGRRYnRs2AJCFVGWU4xpaxrW29UdjE6CUVsFBSh0zfOO8/riIZ2WFYHIlX76BozA1A63cUjIJRMApGwSgYBaNgFAw1AAAuNkp+FPFxcgAAAABJRU5ErkJggg==',
+    bullet_sheet: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAgCAYAAADaInAlAAACGklEQVR42u2Yv07jQBDGv4nCvyeAK/IEpLqOwnRHyTV3DwCVQwpe5AooCF0ayqsoKIAuKVL5pJO48kr+SfQBJ2IoYC0DCZDYmT1fvp9kyfZa+mZ2xzszCxBCCCGEEEIIIYR8AH2C+sXVL2cRT9+LiFg7H7er1M+oX866+D6CwDl/f3YDAIhRpf6Y+uUsi+/03CuLSUg7v7B1DQDoNuwWYar1VTWdd1RVtXf8TVPpaOIp8a61rN3GogLQi531xJZuY1HvWssTz8cv9Z3/RdUvjWOEiCAKg+Q5CgNYpsCFretX+u5v8KGvqub66R8ti/8jB8Dt/hIA4PN+a+jYJJkNzsYaywuXd0cdy1v/V201F/2RAiBuV59tMZe7X9/9Ju/8l37+tH34oQI1z+03j2/+Jf1SHob9/ts374GdZv/ku1f98tpPL2cAaZ+z+D9WG9irVyAiaH5ZAY6AzdMOevUK+oitemCICDYAHPw4x+ZpB1bnMfO1K2jtsQ5qYgUb24/3Tt/15pOkV69gZq+DJjzM/9MWo1EYJFVoFAYKwKQKdlV/FAZJF+L0LU7l0vquC7HUHzT/ziaL+U8MGHRZtUE+9d1kD7osAyAv/0dOAXOrf+SNMasUOMwGizwgLgW9TEuG+PP/rSgz2YI8M+ywyx2SFc2fUtEM9h2Acbs68NBLREwKwP8tALkDFS0Apn0Bpt1/QgghhBBCCCGF5gFPGWRaWw1H4gAAAABJRU5ErkJggg==',
+    asteroid: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAADuElEQVR42u2aP0vzUBTGT0TIKnTI2CIloy4p2TLmGwiZBRfx45R3EZwLfgNHt6KLHUsp7dhBcHXKO7QnnhzvTeL7DvfWPD8QbBJK+jzn370JEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjp3A8/srj/z+/TXg+urGeu7h8b4kIvpzd0dERK+7TyIiWm221TVFGtPtdHr0hpz6dDMsfDbJaTwaVseTKDz8N6wZwQYxt9NpeWwmnPgk/sX5JWWTvDrGka+NKNK4dnw2X9JsvmRDSmRARziSn1+eyovzSzobRLXIN5mged190ng0rGXFMWWC8wxg8W0GybovRWdjOCvGoyHN5ktZmkoY8APxzwZRLSuSKKyyQRrx1Q+oqwleG+EsTbNJ/s0AFpwFtU0/NgNMmbLabOn55cnbKcnlDZXccD/ed1UGsMC69utSJK+zGSBNOGScd0Y4bcJFGu8F6ni9bLaz+ZKKNK7E59JjmpK+GntelT5fTPBiDJWTj6msyOjXU5I8zuekGfJ7xqMhFWnsVZM+cVl+ZvNlrYHaTCjSuBbVTaOqyaAkCqs/xhcTApcGyJIho1Y346ZFmT6/2mwrs+R32hr4w+O9057ghQFtZUlPRU2Tj1wdyzHWZoJrA5z2AF1abIswWZJkKWlaJUsDbX0jiULnpejUpfhyK6Gt2ZrE1hOQNDOJwm+9QY+yukT1LgNsEaxXwFo4mQWy1LCgOmPasuRQDsveGdAkThKFVKSxcTvCNPU0ZQwbYWrCtvL06w3gaNUmsCAyiuWMb+oLNmPlph32gixTkBwZu/QCPmcaVU1bE22Tk+tJyJsxVAraFrVtJjT1F9O1h0ebQa9KUNfesNpsrWVKliMWXJcd3cj1eZfiuzQgEDuTxshNorBWitoWXjrqTdOT/OxLf3C6Hc2PIdsWTNoAbuAyE/6lf/R5K6IygIgaTZDi2porX9O0d2Qy4vnlia6vboKDCf1aCWeTPOAnYh/vuy9xGlauJlF1WdELMPO4OjQ+a+5dE84mebBYv1VZIDPBVC6axLc1WjaDX11hOPp72wPkGCpfS2nDZEjXaOZMW6zfauL3sgSZylE2yK3C6bcmuoqtWazfKJvkgewtLnFmwPcfvzeBs8MmYJtBDH+W38Pi+7Tm8ebd0L0he3HYCPnClknkNpNkyeFMw16QQr4lrcsLG6HNaONsEMlXUIzCG9YC/TTgJ+uGX/zbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID/4S8QZk4aDFAqtAAAAABJRU5ErkJggg==',
+};
+
+const animeSprites = {};
+Object.keys(ANIME_SPRITE_DATA).forEach(k => {
+    const img = new Image();
+    img.src = ANIME_SPRITE_DATA[k];
+    animeSprites[k] = img;
+});
+function spriteReady(img) { return !!img && img.complete && img.naturalWidth > 0; }
+function shipSpriteForHP(pct) {
+    if (pct > 75) return animeSprites.ship_full;
+    if (pct > 50) return animeSprites.ship_slight;
+    if (pct > 25) return animeSprites.ship_damaged;
+    return animeSprites.ship_very_damaged;
+}
+function drawShipSprite(ship, size, player) {
+    const pct = clamp((ship.hp / (ship.maxHp || ship.hp || 1)) * 100, 0, 100);
+    const sprite = shipSpriteForHP(pct);
+    const engine = animeSprites.engine;
+    const drawSize = size * 2.7;
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.rotate(ship.angle + Math.PI / 2);
+    if (ship.speed > 0.05 && spriteReady(engine)) {
+        ctx.globalAlpha = 0.85;
+        ctx.drawImage(engine, -drawSize / 2, drawSize * 0.18, drawSize, drawSize);
+        ctx.globalAlpha = 1;
+    }
+    if (spriteReady(sprite)) {
+        ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.globalAlpha = 0.32;
+        ctx.fillStyle = player.traitColor;
+        ctx.fillRect(-drawSize / 2, -drawSize / 2, drawSize, drawSize);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+    } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = player.traitColor;
+        ctx.fill();
+    }
+    ctx.restore();
+}
+function drawBulletSprite(b) {
+    const sheet = animeSprites.bullet_sheet;
+    if (!spriteReady(sheet)) return false;
+    const frameW = 32, frameH = 32, frameCount = 4;
+    const frame = Math.floor(Date.now() / 80) % frameCount;
+    const angle = Math.atan2(b.dy || 0, b.dx || 1) + Math.PI / 2;
+    const drawSize = Math.max(8, b.size * 5);
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(angle);
+    ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+    ctx.restore();
+    return true;
+}
+function drawAsteroidSprite(a) {
+    const sprite = animeSprites.asteroid;
+    if (!spriteReady(sprite)) return false;
+    const drawSize = a.size * 2.3;
+    ctx.save();
+    ctx.translate(a.x, a.y);
+    ctx.rotate(a.angle);
+    ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+    ctx.restore();
+    return true;
 }
 
 const SHIP_ICON_PATH = 'M21 12L4 20L9 12L4 4Z';
@@ -3191,6 +3348,62 @@ function spawnGravityWells() {
     gravityWells.length = 0;
     for (let i = 0; i < 3; i++) gravityWells.push({ x: rand(50, WORLD_WIDTH - 50), y: rand(50, WORLD_HEIGHT - 50), strength: 100, spin: 0 });
 }
+function updateBattleZone(deltaTime) {
+    const autoTriggered = matchStartTime && (Date.now() - matchStartTime >= BATTLE_ROYALE_AUTO_TRIGGER_MS);
+    if (!modules.battleRoyale && !autoTriggered) { zone.active = false; return; }
+    if (!zone.active) {
+        zone.active = true;
+        zone.x = WORLD_WIDTH / 2;
+        zone.y = WORLD_HEIGHT / 2;
+        zone.radius = Math.min(WORLD_WIDTH, WORLD_HEIGHT) / 2;
+        zoneShrinkTimer = 0;
+        if (autoTriggered && !modules.battleRoyale) pushSystemChat('5 MINUTES ELAPSED \u2014 SAFE ZONE ACTIVATED');
+    }
+    zoneShrinkTimer += deltaTime;
+    if (zoneShrinkTimer >= ZONE_SHRINK_INTERVAL && zone.radius > ZONE_MIN_RADIUS) {
+        zoneShrinkTimer = 0;
+        zone.radius = Math.max(ZONE_MIN_RADIUS, zone.radius * ZONE_SHRINK_FACTOR);
+        pushSystemChat('THE SAFE ZONE IS SHRINKING');
+    }
+    const now = Date.now();
+    players.forEach(p => {
+        if (!p.alive) return;
+        for (let i = p.ships.length - 1; i >= 0; i--) {
+            const s = p.ships[i];
+            const dist = Math.hypot(s.x - zone.x, s.y - zone.y);
+            if (dist > zone.radius) {
+                if (!s.lastZoneDamage || now - s.lastZoneDamage > ZONE_TICK_INTERVAL) {
+                    s.lastZoneDamage = now;
+                    const dmg = Math.round(ZONE_TICK_DAMAGE * damageMultiplier(s));
+                    s.hp -= dmg;
+                    s.lastHit = now;
+                    showDamage(s.x, s.y, dmg, '#ff4d6d');
+                    if (s.hp <= 0) { p.ships.splice(i, 1); explosion(s.x, s.y, 30, p.traitColor); }
+                }
+            }
+        }
+    });
+}
+function drawBattleZone() {
+    if (!zone.active) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(zone.x - WORLD_WIDTH, zone.y - WORLD_HEIGHT, WORLD_WIDTH * 2, WORLD_HEIGHT * 2);
+    ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,20,50,0.10)';
+    ctx.fill('evenodd');
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(zone.x, zone.y, zone.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(47,224,255,0.6)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10, 6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+
 function drawGravityWells() {
     gravityWells.forEach(w => {
         w.spin += 0.03;
@@ -3227,7 +3440,7 @@ function drawRadar() {
     radarCtx.beginPath(); radarCtx.moveTo(w / 2, 0); radarCtx.lineTo(w / 2, h); radarCtx.moveTo(0, h / 2); radarCtx.lineTo(w, h / 2); radarCtx.stroke();
 
     let sx, sy, ox, oy;
-    if (modules.massiveMap) {
+    if (modules.massiveMap || modules.battleRoyale) {
         const range = 620;
         sx = w / range; sy = h / range;
         ox = camera.x - range / 2; oy = camera.y - range / 2;
@@ -3237,6 +3450,16 @@ function drawRadar() {
     }
     const rx = (wx) => (wx - ox) * sx;
     const ry = (wy) => (wy - oy) * sy;
+
+    if (zone.active) {
+        radarCtx.beginPath();
+        radarCtx.arc(rx(zone.x), ry(zone.y), zone.radius * sx, 0, Math.PI * 2);
+        radarCtx.strokeStyle = 'rgba(47,224,255,0.55)';
+        radarCtx.lineWidth = 1;
+        radarCtx.setLineDash([3, 2]);
+        radarCtx.stroke();
+        radarCtx.setLineDash([]);
+    }
 
     radarCtx.fillStyle = 'rgba(160,160,170,0.65)';
     asteroids.forEach(a => { radarCtx.beginPath(); radarCtx.arc(rx(a.x), ry(a.y), 1.3, 0, Math.PI * 2); radarCtx.fill(); });
@@ -3285,7 +3508,7 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
             player.dashEnd = Date.now() + 250;
             player.lastDash = Date.now();
             if (modules.overdrive) leadShip.shieldUntil = Date.now() + 1000;
-            playDash();
+            withProximity(leadShip.x, leadShip.y, () => playDash());
         }
         if (shotReady(player, 120 * (1 + player.ships.length * 0.015))) {
             const bulletSpeed = 2.5;
@@ -3299,7 +3522,7 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
                 });
             });
             registerShot(player, 120 * (1 + player.ships.length * 0.015));
-            playLaser();
+            withProximity(leadShip.x, leadShip.y, () => playLaser());
         }
     } else {
         const difficultySettings = {
@@ -3433,7 +3656,7 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
             player.dashEnd = Date.now() + 250;
             player.lastDash = Date.now();
             if (modules.overdrive) leadShip.shieldUntil = Date.now() + 1000;
-            playDash();
+            withProximity(leadShip.x, leadShip.y, () => playDash());
         }
 
         if (shotReady(player, settings.shootFreq)) {
@@ -3455,7 +3678,7 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
                         });
                     });
                     registerShot(player, settings.shootFreq);
-                    playLaser();
+                    withProximity(leadShip.x, leadShip.y, () => playLaser());
                     if (Math.random() < 0.5 && (player.botState === 'chasing' || player.botState === 'aggressiveChase')) {
                         showBotMessage(player, 'chasing', player.target);
                     }
@@ -3634,10 +3857,10 @@ function updatePlayer(player, index, isMenuBot, deltaTime) {
             b.x = (b.x + WORLD_WIDTH) % WORLD_WIDTH;
             b.y = (b.y + WORLD_HEIGHT) % WORLD_HEIGHT;
         } else if (modules.ricochetRounds) {
-            if (b.x < 0) { b.x = 0; b.dx *= -1; b.bounces++; playRicochet(); }
-            else if (b.x > WORLD_WIDTH) { b.x = WORLD_WIDTH; b.dx *= -1; b.bounces++; playRicochet(); }
-            if (b.y < 0) { b.y = 0; b.dy *= -1; b.bounces++; playRicochet(); }
-            else if (b.y > WORLD_HEIGHT) { b.y = WORLD_HEIGHT; b.dy *= -1; b.bounces++; playRicochet(); }
+            if (b.x < 0) { b.x = 0; b.dx *= -1; b.bounces++; withProximity(b.x, b.y, () => playRicochet()); }
+            else if (b.x > WORLD_WIDTH) { b.x = WORLD_WIDTH; b.dx *= -1; b.bounces++; withProximity(b.x, b.y, () => playRicochet()); }
+            if (b.y < 0) { b.y = 0; b.dy *= -1; b.bounces++; withProximity(b.x, b.y, () => playRicochet()); }
+            else if (b.y > WORLD_HEIGHT) { b.y = WORLD_HEIGHT; b.dy *= -1; b.bounces++; withProximity(b.x, b.y, () => playRicochet()); }
         }
         if (!modules.chromebookMode || Math.random() < 0.5) {
             particles.push({ x: b.x - b.dx, y: b.y - b.dy, size: modules.smallMode ? 0.1 : 0.2, life: 6, color: b.color });
@@ -3759,6 +3982,9 @@ function updateAsteroids(deltaTime, drawOnly) {
             a.angle += a.spin * deltaTime * 60;
         }
         const tier = perfTier();
+        if (currentTheme === 'anime' && drawAsteroidSprite(a)) {
+            return;
+        }
         const palette = ASTEROID_PALETTES[a.colorType || 0];
         if (tier === 'high') {
             const grad = ctx.createRadialGradient(a.x - a.size * 0.3, a.y - a.size * 0.3, 0, a.x, a.y, a.size);
@@ -3912,7 +4138,7 @@ function updatePowerUps(drawOnly) {
                     showPowerUp(pu.x, pu.y, count, '#00ffcc');
                     if (p.isBot) showBotMessage(p, 'powerUp');
                     powerUps.splice(i, 1);
-                    playPowerUp(count);
+                    withProximity(pu.x, pu.y, () => playPowerUp(count));
                     consumed = true;
                 }
             }
@@ -3936,9 +4162,9 @@ function explosion(x, y, count, baseColor, size, isFinal) {
         }
         // shockwave ring
         particles.push({ x, y, size: 1, life: 22, color: '#ffffff', dx: 0, dy: 0, ring: true, ringMax: modules.smallMode ? 30 : 55 });
-        playExplosion(count);
+        withProximity(x, y, () => playExplosion(count));
     } else {
-        playExplosion(count);
+        withProximity(x, y, () => playExplosion(count));
     }
 }
 
@@ -4011,7 +4237,7 @@ function checkCollisions() {
                         s.dy -= b.dy * 0.06;
                         showDamage(s.x, s.y, dmg, targetPlayer.traitColor, isCrit);
                         explosion(b.x, b.y, 6, targetPlayer.traitColor);
-                        if (isCrit) playCrit(); else playHit();
+                        withProximity(b.x, b.y, () => { if (isCrit) playCrit(); else playHit(); });
                         if (s.hp <= 0) {
                             targetPlayer.ships.splice(si, 1);
                             explosion(s.x, s.y, 50, targetPlayer.traitColor);
@@ -4032,7 +4258,7 @@ function checkCollisions() {
                     a.hp -= 40;
                     showDamage(a.x, a.y, 40, '#fff');
                     explosion(b.x, b.y, 6, '#999999');
-                    playAsteroidBreak();
+                    withProximity(b.x, b.y, () => playAsteroidBreak());
                     if (a.hp <= 0) {
                         asteroids.splice(ai, 1);
                         explosion(a.x, a.y, 50, '#999999');
@@ -4063,7 +4289,7 @@ function checkCollisions() {
                     if (overlapX < overlapY) { b.dx *= -1; b.x += b.dx > 0 ? overlapX : -overlapX; }
                     else { b.dy *= -1; b.y += b.dy > 0 ? overlapY : -overlapY; }
                     b.bounces++;
-                    playRicochet();
+                    withProximity(b.x, b.y, () => playRicochet());
                     break;
                 }
             }
@@ -4092,7 +4318,7 @@ function checkCollisions() {
                         showDamage(s.x, s.y, damageToS, p.traitColor);
                         showDamage(os.x, os.y, damageToOs, op.traitColor);
                         explosion(s.x, s.y, 12, p.traitColor);
-                        playThud();
+                        withProximity(s.x, s.y, () => playThud());
 
                         const dx = s.x - os.x, dy = s.y - os.y;
                         const distActual = Math.hypot(dx, dy) || 1;
@@ -4126,7 +4352,7 @@ function checkCollisions() {
                     showDamage(s.x, s.y, damage, p.traitColor);
                     showDamage(a.x, a.y, 12, '#fff');
                     explosion(s.x, s.y, 18, p.traitColor);
-                    playSolidImpact();
+                    withProximity(s.x, s.y, () => playSolidImpact());
 
                     const dx = s.x - a.x, dy = s.y - a.y;
                     const distActual = Math.hypot(dx, dy) || 1;
@@ -4172,7 +4398,7 @@ function checkCollisions() {
                     } else {
                         if (s.y < o.y + o.h / 2) { s.y -= overlapY; s.dy = 0; } else { s.y += overlapY; s.dy = 0; }
                     }
-                    playSolidImpact();
+                    withProximity(s.x, s.y, () => playSolidImpact());
                 }
             }
         });
@@ -4198,7 +4424,7 @@ function checkCollisions() {
                     pushSystemChat(p.name.toUpperCase() + ' WAS DESTROYED — RESPAWNING');
                     const lp = p.lastPos || { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
                     explosion(lp.x, lp.y, 200, p.traitColor, 1.5, true);
-                    playElimination();
+                    withProximity(lp.x, lp.y, () => playElimination());
                     p.respawnAt = Date.now() + 3000;
                 }
                 return;
@@ -4207,7 +4433,7 @@ function checkCollisions() {
             if (p.lives > 0 && modules.threeLives) {
                 const pos = { x: rand(12.5, WORLD_WIDTH - 12.5), y: rand(12.5, WORLD_HEIGHT - 12.5) };
                 p.ships.push(makeShip(pos.x, pos.y, 0, 'full'));
-                playRespawn();
+                withProximity(pos.x, pos.y, () => playRespawn());
             } else {
                 p.alive = false;
                 p.bullets = [];
@@ -4216,7 +4442,7 @@ function checkCollisions() {
                 pushSystemChat(p.name.toUpperCase() + ' HAS BEEN ELIMINATED');
                 const lp = p.lastPos || { x: WORLD_WIDTH / 2, y: WORLD_HEIGHT / 2 };
                 explosion(lp.x, lp.y, 200, p.traitColor, 1.5, true);
-                playElimination();
+                withProximity(lp.x, lp.y, () => playElimination());
             }
         }
     });
@@ -4227,7 +4453,7 @@ function checkCollisions() {
                 const pos = { x: rand(12.5, WORLD_WIDTH - 12.5), y: rand(12.5, WORLD_HEIGHT - 12.5) };
                 p.ships.push(makeShip(pos.x, pos.y, 0, 'full'));
                 p.respawnAt = null;
-                playRespawn();
+                withProximity(pos.x, pos.y, () => playRespawn());
             }
         });
     }
@@ -4235,7 +4461,7 @@ function checkCollisions() {
 
 /* ---------------------- 11. Main loop & boot ---------------------- */
 function updateCamera() {
-    if (!modules.massiveMap && !persistentMode) {
+    if (!modules.massiveMap && !modules.battleRoyale && !persistentMode) {
         camera.x = canvas.width / 2;
         camera.y = canvas.height / 2;
         return;
@@ -4293,6 +4519,7 @@ function guestFrame(currentTime) {
     drawStars();
     drawObstacles();
     if (modules.gravityWells) drawGravityWells();
+    if (zone.active) drawBattleZone();
 
     if (inMatch) {
         updateAsteroids(deltaTime, true);
@@ -4335,6 +4562,7 @@ function gameLoop(currentTime) {
     drawStars();
     drawObstacles();
     if (modules.gravityWells) drawGravityWells();
+    if (zone.active) drawBattleZone();
 
     if (gameState === 'menu') {
         menuBots.forEach((bot, i) => updatePlayer(bot, i, true, deltaTime));
@@ -4375,6 +4603,7 @@ function gameLoop(currentTime) {
         updatePowerUps();
         updateAsteroids(deltaTime);
         if (modules.debrisField) updateDebris(deltaTime);
+        updateBattleZone(deltaTime);
         checkCollisions();
 
         players.forEach(p => {
