@@ -31,7 +31,7 @@
         --success: #3de8a5;
         --text-hi: #eaf6ff;
         --text-mid: #9fb4d6;
-        --text-dim: #5f7295;
+        --text-dim: #7d92bd;
         --glow-a: rgba(90,60,200,0.16);
         --glow-b: rgba(0,180,220,0.14);
         --stage-a: rgba(10,14,40,0.9);
@@ -50,7 +50,7 @@
         --panel-line: rgba(20,30,60,0.14);
         --cyan: #2563eb; --cyan-dim: #1d4fbf; --violet: #7c3aed; --violet-dim: #6428c7;
         --gold: #b45309; --danger: #dc2626; --success: #059669;
-        --text-hi: #14161f; --text-mid: #4b5265; --text-dim: #848dab;
+        --text-hi: #14161f; --text-mid: #4b5265; --text-dim: #66708f;
         --glow-a: rgba(37,99,235,0.07); --glow-b: rgba(124,58,237,0.06);
         --stage-a: rgba(255,255,255,0.9); --stage-b: rgba(225,228,238,1);
     }
@@ -60,7 +60,7 @@
         --panel-line: rgba(255,180,100,0.22);
         --cyan: #ff9d3d; --cyan-dim: #d97f2c; --violet: #ff5f56; --violet-dim: #d9483f;
         --gold: #ffd166; --danger: #ff3b30; --success: #a0c34a;
-        --text-hi: #fff3e6; --text-mid: #d9b491; --text-dim: #8f6a4f;
+        --text-hi: #fff3e6; --text-mid: #d9b491; --text-dim: #b08968;
         --glow-a: rgba(255,120,40,0.18); --glow-b: rgba(255,80,60,0.14);
         --stage-a: rgba(40,18,8,0.9); --stage-b: rgba(10,4,2,1);
     }
@@ -70,7 +70,7 @@
         --panel-line: rgba(255,60,220,0.25);
         --cyan: #ff2fd0; --cyan-dim: #c723a3; --violet: #4fe8ff; --violet-dim: #2cb8cc;
         --gold: #ffe93b; --danger: #ff2f6e; --success: #39ff9d;
-        --text-hi: #f5e9ff; --text-mid: #c79fe0; --text-dim: #7c5c96;
+        --text-hi: #f5e9ff; --text-mid: #c79fe0; --text-dim: #9c7bb8;
         --glow-a: rgba(255,47,208,0.18); --glow-b: rgba(79,232,255,0.14);
         --stage-a: rgba(20,4,36,0.9); --stage-b: rgba(6,1,12,1);
     }
@@ -80,7 +80,7 @@
         --panel-line: rgba(43,255,158,0.22);
         --cyan: #2bff9e; --cyan-dim: #1fcc7d; --violet: #17c9a8; --violet-dim: #129e85;
         --gold: #d4ff3d; --danger: #ff4757; --success: #2bff9e;
-        --text-hi: #e4fff0; --text-mid: #9fd9bc; --text-dim: #5f8e77;
+        --text-hi: #e4fff0; --text-mid: #9fd9bc; --text-dim: #7bb096;
         --glow-a: rgba(43,255,158,0.14); --glow-b: rgba(23,201,168,0.12);
         --stage-a: rgba(4,20,12,0.9); --stage-b: rgba(1,5,3,1);
     }
@@ -229,7 +229,7 @@
         font-family: var(--font-display);
         font-size: 10px;
         letter-spacing: 2px;
-        color: var(--text-dim);
+        color: var(--text-mid);
         margin: 4px 2px 8px;
         display: flex;
         justify-content: space-between;
@@ -1538,6 +1538,7 @@ function cancelNetSession() {
     netEntered = false;
     guestConns = [];
     roster = [];
+    myPlayer = null;
     if (peer) { try { peer.destroy(); } catch (e) {} }
     peer = null; hostConn = null;
     setNetBanner(null);
@@ -1776,6 +1777,38 @@ function buildSnapshot() {
     };
 }
 
+let myPlayer = null; // guest-only: persistent, locally-simulated player object for MY own ship
+
+function reconcileMyPlayer(mp, pd) {
+    mp.alive = pd.alive;
+    mp.lives = pd.lives;
+    if (pd.ships.length !== mp.ships.length) {
+        // Fleet size changed (grew from a power-up, or lost a ship) — host is
+        // authoritative for this. Rebuild the ship list from host data, but
+        // keep my own lead ship's locally-predicted position/heading/velocity
+        // so the correction doesn't cause a visible jump.
+        const myLead = mp.ships[0];
+        mp.ships = pd.ships.map((s, i) => {
+            if (i === 0 && myLead) {
+                return { x: myLead.x, y: myLead.y, angle: myLead.angle, hp: s.hp, maxHp: s.maxHp, speed: myLead.speed, dx: myLead.dx, dy: myLead.dy, lastHit: s.hp < myLead.hp ? Date.now() : myLead.lastHit };
+            }
+            return { x: s.x, y: s.y, angle: s.angle, hp: s.hp, maxHp: s.maxHp, speed: s.speed, dx: 0, dy: 0, lastHit: s.lastHit };
+        });
+    } else {
+        for (let i = 0; i < mp.ships.length; i++) {
+            if (pd.ships[i]) { mp.ships[i].hp = pd.ships[i].hp; mp.ships[i].maxHp = pd.ships[i].maxHp; }
+        }
+    }
+    // Gentle drift correction for the lead ship only — escorts self-correct
+    // via the normal local formation math once the lead is right.
+    const lead = mp.ships[0], hostLead = pd.ships[0];
+    if (lead && hostLead) {
+        const drift = Math.hypot(lead.x - hostLead.x, lead.y - hostLead.y);
+        if (drift > 80) { lead.x = hostLead.x; lead.y = hostLead.y; lead.angle = hostLead.angle; }
+        else if (drift > 15) { lead.x += (hostLead.x - lead.x) * 0.2; lead.y += (hostLead.y - lead.y) * 0.2; }
+    }
+}
+
 function applyNetSnapshot(data) {
     gameState = data.gameState;
     countdownValue = data.countdownValue;
@@ -1783,18 +1816,36 @@ function applyNetSnapshot(data) {
     matchStartTime = data.matchStartTime;
     if (data.modules) modules = data.modules;
 
-    players.length = 0;
+    const newPlayers = [];
     data.players.forEach(pd => {
-        players.push({
-            ships: pd.ships.map(s => ({ x: s.x, y: s.y, angle: s.angle, hp: s.hp, maxHp: s.maxHp, speed: s.speed, dx: 0, dy: 0, lastHit: s.lastHit })),
-            bullets: pd.bullets.map(b => ({ x: b.x, y: b.y, size: b.size, color: pd.traitColor })),
-            keys: {}, alive: pd.alive, formation: pd.formation,
-            lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
-            isBot: pd.isBot, difficulty: 'player', traitColor: pd.traitColor,
-            name: pd.name, lastMessageTime: 0, lives: pd.lives,
-            quarter: null, netId: pd.netId, isMe: pd.netId === myPeerId
-        });
+        if (pd.netId === myPeerId) {
+            if (!myPlayer) {
+                myPlayer = {
+                    ships: pd.ships.map(s => ({ x: s.x, y: s.y, angle: s.angle, hp: s.hp, maxHp: s.maxHp, speed: s.speed, dx: 0, dy: 0, lastHit: s.lastHit })),
+                    bullets: [], keys: NET_CONTROLS, alive: pd.alive, formation: pd.formation,
+                    lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
+                    isBot: false, difficulty: 'player', traitColor: pd.traitColor,
+                    name: pd.name, lastMessageTime: 0, lives: pd.lives,
+                    quarter: null, netId: pd.netId, isMe: true
+                };
+            } else {
+                reconcileMyPlayer(myPlayer, pd);
+            }
+            newPlayers.push(myPlayer);
+        } else {
+            newPlayers.push({
+                ships: pd.ships.map(s => ({ x: s.x, y: s.y, angle: s.angle, hp: s.hp, maxHp: s.maxHp, speed: s.speed, dx: 0, dy: 0, lastHit: s.lastHit })),
+                bullets: pd.bullets.map(b => ({ x: b.x, y: b.y, size: b.size, color: pd.traitColor })),
+                keys: {}, alive: pd.alive, formation: pd.formation,
+                lastShot: 0, lastDash: 0, dashEnd: 0, dashSpeed: 0,
+                isBot: pd.isBot, difficulty: 'player', traitColor: pd.traitColor,
+                name: pd.name, lastMessageTime: 0, lives: pd.lives,
+                quarter: null, netId: pd.netId, isMe: false
+            });
+        }
     });
+    players.length = 0;
+    newPlayers.forEach(p => players.push(p));
 
     asteroids.length = 0; data.asteroids.forEach(a => asteroids.push({ ...a, spin: 0 }));
     obstacles.length = 0; data.obstacles.forEach(o => obstacles.push(o));
@@ -2989,6 +3040,46 @@ function buildShipGridHTML(player) {
     return html;
 }
 
+// Builds one fleet-status card. Defensively wrapped: if anything about a
+// specific player's data is unexpected, that one card is skipped (with a
+// console warning for diagnosis) instead of silently breaking the whole
+// panel or aborting the rest of the frame.
+function buildFleetCardElement(p) {
+    try {
+        const totalHP = getTotalHP(p);
+        const maxHP = getMaxHPPool(p);
+        const hpPercent = maxHP > 0 ? (totalHP / maxHP * 100) : 0;
+        const div = document.createElement('div');
+        div.className = 'fleet-card' + (p.isBot ? '' : ' fleet-card-detailed');
+        div.style.setProperty('--fc-color', p.traitColor || '#2fe0ff');
+        const safeName = (p.name || 'Pilot') + (p.isMe ? ' (you)' : '');
+        if (p.isBot) {
+            div.innerHTML =
+                '<div class="fc-row"><span class="fc-name">' + safeName + '</span><span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
+                '<div class="fc-bar-track"><div class="fc-bar-fill" style="width:' + clamp(hpPercent, 0, 100) + '%"></div></div>' +
+                '<div class="fc-meta"><span>' + hpPercent.toFixed(0) + '% HP</span><span>' + (modules.threeLives ? 'Lives ' + p.lives : '') + '</span></div>';
+        } else {
+            div.innerHTML =
+                '<div class="fc-row"><span class="fc-name">' + safeName + '</span><span class="fc-ships">' + p.ships.length + ' ships' + (modules.threeLives ? ' \u00b7 Lives ' + p.lives : '') + '</span></div>' +
+                buildShipGridHTML(p) +
+                '<div class="fc-avg">AVG HP <strong>' + hpPercent.toFixed(0) + '%</strong></div>';
+        }
+        return div;
+    } catch (e) {
+        console.warn('Fleet card build failed for player', p && p.name, e);
+        return null;
+    }
+}
+function renderFleetList() {
+    fleetList.innerHTML = '';
+    players.forEach(p => {
+        if (p.alive && p.ships.length > 0) {
+            const card = buildFleetCardElement(p);
+            if (card) fleetList.appendChild(card);
+        }
+    });
+}
+
 function getTotalHP(player) { return player.ships.reduce((sum, s) => sum + s.hp, 0); }
 function getMaxHPPool(player) { return player.ships.reduce((sum, s) => sum + (s.maxHp || s.hp), 0); }
 function isLowHealth(player, threshold) {
@@ -4149,10 +4240,23 @@ function updateCamera() {
         camera.y = canvas.height / 2;
         return;
     }
-    const myShip = players.find(p => p.isMe && p.alive && p.ships.length);
-    const humanLead = myShip || players.find(p => !p.isBot && p.alive && p.ships.length);
-    const tx = humanLead ? humanLead.ships[0].x : camera.x;
-    const ty = humanLead ? humanLead.ships[0].y : camera.y;
+    const me = players.find(p => p.isMe);
+    let tx, ty;
+    if (me && me.ships.length) {
+        // Normal case: follow my own lead ship.
+        tx = me.ships[0].x; ty = me.ships[0].y;
+    } else if (me && me.lastPos) {
+        // I exist but am between deaths (respawn delay) — hold steady at
+        // where I died instead of snapping to whichever other player the
+        // old fallback used to grab.
+        tx = me.lastPos.x; ty = me.lastPos.y;
+    } else {
+        // No local identity at all (e.g. local massiveMap play, or online
+        // but haven't entered yet) — fall back to the first human found.
+        const humanLead = players.find(p => !p.isBot && p.alive && p.ships.length);
+        tx = humanLead ? humanLead.ships[0].x : camera.x;
+        ty = humanLead ? humanLead.ships[0].y : camera.y;
+    }
     camera.x += (tx - camera.x) * 0.12;
     camera.y += (ty - camera.y) * 0.12;
     const halfW = canvas.width / 2, halfH = canvas.height / 2;
@@ -4173,6 +4277,14 @@ function guestFrame(currentTime) {
     }
 
     const inMatch = (gameState === 'countdown' || gameState === 'playing');
+
+    // Client-side prediction: run full local physics for MY OWN ship every
+    // frame so movement responds immediately to input, instead of only
+    // updating once every snapshot (~90ms + network latency). The host
+    // remains authoritative for HP/hits/eliminations via reconcileMyPlayer().
+    if (inMatch && myPlayer && myPlayer.alive && myPlayer.ships.length) {
+        updatePlayer(myPlayer, 0, false, deltaTime);
+    }
     if (inMatch) updateCamera(); else { camera.x = canvas.width / 2; camera.y = canvas.height / 2; }
     ctx.save();
     ctx.translate(canvas.width / 2 - camera.x, canvas.height / 2 - camera.y);
@@ -4195,29 +4307,7 @@ function guestFrame(currentTime) {
         drawShockwaves();
         drawDamageFormationPowerUp();
 
-        fleetList.innerHTML = '';
-        players.forEach((p, i) => {
-            if (p.alive && p.ships.length > 0) {
-                const totalHP = getTotalHP(p);
-                const maxHP = getMaxHPPool(p);
-                const hpPercent = maxHP > 0 ? (totalHP / maxHP * 100) : 0;
-                const div = document.createElement('div');
-                div.className = 'fleet-card' + (p.isBot ? '' : ' fleet-card-detailed');
-                div.style.setProperty('--fc-color', p.traitColor);
-                if (p.isBot) {
-                    div.innerHTML =
-                        '<div class="fc-row"><span class="fc-name">' + p.name + '</span><span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
-                        '<div class="fc-bar-track"><div class="fc-bar-fill" style="width:' + clamp(hpPercent, 0, 100) + '%"></div></div>' +
-                        '<div class="fc-meta"><span>' + hpPercent.toFixed(0) + '% HP</span><span></span></div>';
-                } else {
-                    div.innerHTML =
-                        '<div class="fc-row"><span class="fc-name">' + p.name + (p.isMe ? ' (you)' : '') + '</span><span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
-                        buildShipGridHTML(p) +
-                        '<div class="fc-avg">AVG HP <strong>' + hpPercent.toFixed(0) + '%</strong></div>';
-                }
-                fleetList.appendChild(div);
-            }
-        });
+        renderFleetList();
         elimList.innerHTML = eliminations.map(e => '<div class="elim-toast">' + e.name + ' eliminated</div>').join('');
         hudClock.textContent = formatTime(Date.now() - matchStartTime);
         drawRadar();
@@ -4356,29 +4446,7 @@ function gameLoop(currentTime) {
             playVictoryFanfare();
         }
 
-        fleetList.innerHTML = '';
-        players.forEach((p, i) => {
-            if (p.alive && p.ships.length > 0) {
-                const totalHP = getTotalHP(p);
-                const maxHP = getMaxHPPool(p);
-                const hpPercent = maxHP > 0 ? (totalHP / maxHP * 100) : 0;
-                const div = document.createElement('div');
-                div.className = 'fleet-card' + (p.isBot ? '' : ' fleet-card-detailed');
-                div.style.setProperty('--fc-color', p.traitColor);
-                if (p.isBot) {
-                    div.innerHTML =
-                        '<div class="fc-row"><span class="fc-name">' + p.name + '</span><span class="fc-ships">' + p.ships.length + ' ships</span></div>' +
-                        '<div class="fc-bar-track"><div class="fc-bar-fill" style="width:' + clamp(hpPercent, 0, 100) + '%"></div></div>' +
-                        '<div class="fc-meta"><span>' + hpPercent.toFixed(0) + '% HP</span><span>' + (modules.threeLives ? 'Lives ' + p.lives : '') + '</span></div>';
-                } else {
-                    div.innerHTML =
-                        '<div class="fc-row"><span class="fc-name">' + p.name + '</span><span class="fc-ships">' + p.ships.length + ' ships' + (modules.threeLives ? ' \u00b7 Lives ' + p.lives : '') + '</span></div>' +
-                        buildShipGridHTML(p) +
-                        '<div class="fc-avg">AVG HP <strong>' + hpPercent.toFixed(0) + '%</strong></div>';
-                }
-                fleetList.appendChild(div);
-            }
-        });
+        renderFleetList();
         for (let i = eliminations.length - 1; i >= 0; i--) {
             if (Date.now() - eliminations[i].time >= 5000) eliminations.splice(i, 1);
         }
